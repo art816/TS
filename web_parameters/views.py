@@ -6,35 +6,35 @@ import sys
 sys.path.append('../NMS')
 #sys.path.append('app/templates')
 
-from nms.core.context import ContextCreator
+#from nms.core.context import ContextCreator
 from flask import current_app as app
 from web_parameters import parameter_orm
-from nms.core.parameters import configure_parameters
+#from nms.core.parameters import configure_parameters
 
 #@app.route('/')
 #@app.route('/inodex')
-def index():
-    """ Show all device and parameters from buer_context"""
-    table_param_dict = dict()
-    with app.db_manager.sessionmaker() as session:
-        session.expire_on_commit = False
-        for orm_param in session.query(parameter_orm.Parameter).all():
-            table_param_dict[orm_param.name] = orm_param
-        if not table_param_dict:
-            table_param_dict = parameter_orm.create_orm_parameters_dict(configure_parameters())
-            for orm_param in table_param_dict.values():
-                session.add(orm_param)
-        param_name_list = [param_name.upper()[:3] for param_name in table_param_dict]
-        param_name_list = sorted(list(set(param_name_list)))
-    return render_template('index.html',
-                           title='Home',
-                           parameters=table_param_dict,
-                           param_list=param_name_list)
+# def index():
+#     """ Show all device and parameters from buer_context"""
+#     table_param_dict = dict()
+#     with app.db_manager.sessionmaker() as session:
+#         session.expire_on_commit = False
+#         for orm_param in session.query(parameter_orm.Parameter).all():
+#             table_param_dict[orm_param.name] = orm_param
+#         if not table_param_dict:
+#             table_param_dict = parameter_orm.create_orm_parameters_dict(configure_parameters())
+#             for orm_param in table_param_dict.values():
+#                 session.add(orm_param)
+#         param_name_list = [param_name.upper()[:3] for param_name in table_param_dict]
+#         param_name_list = sorted(list(set(param_name_list)))
+#     return render_template('index.html',
+#                            title='Home',
+#                            parameters=table_param_dict,
+#                            param_list=param_name_list)
 
 #@app.route('/entries')
 def show_entries():
     """ Show all entries from database. """
-    connect= app.db_manager.get_connect(app.config['DATABASE'])
+    connect = app.db_manager.get_connect(app.config['DATABASE'])
     cur = connect.execute('select id, title, text from entries order by id desc')
     entries = cur.fetchall()
     connect.commit()
@@ -56,7 +56,7 @@ def login():
             session['user_name'] = request.form['username']
             session['logged_in'] = True
             flash('You were logged in')
-            return redirect(url_for('show_entries'))
+            return redirect(url_for('start'))
     return render_template('login.html', error=error)
 
 #@app.route('/logout')
@@ -127,14 +127,18 @@ def update_param():
         flash('Parameter {} was updated'.format(name))
     return redirect(url_for('show_param', param_name=name))
 
+def start():
+    return render_template('start.html')
+
+
 #def update_param():
  #   (request.form['param_name'])
 
 
 def route(app):
     """ Route. """
-    app.add_url_rule('/', 'main', index)
-    app.add_url_rule('/index', 'main', index)
+    # app.add_url_rule('/', 'main', index)
+    # app.add_url_rule('/index', 'main', index)
     app.add_url_rule('/entries', 'show_entries', show_entries)
     app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
     app.add_url_rule('/logout', 'logout', logout)
@@ -142,7 +146,7 @@ def route(app):
     app.add_url_rule('/drop', 'drop_entry', drop_entry, methods=['POST'])
     app.add_url_rule('/show_param/<param_name>', 'show_param', show_param, methods=['GET', 'POST'])
     app.add_url_rule('/update_param', 'update_param', update_param, methods=['GET', 'POST'])
-
+    app.add_url_rule('/start', 'start', start)
     # Json
     app.add_url_rule('/get_num_entries', 'get_num_entries', get_num_entries)
 

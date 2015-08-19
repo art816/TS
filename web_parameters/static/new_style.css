@@ -1,0 +1,35 @@
+html, body {
+    height: 100%;
+    min-height: 400px;
+    width: 100%;
+    min-width: 600px}
+
+header {
+    background-color:black;
+    color:white;
+    text-align:center;
+    padding:5px;
+    min-height:5%
+}
+nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height:300px;
+    width:20%;
+    float:left;
+    padding:2%;
+    min-height:90%;
+}
+section {
+    width:75%;
+    float:left;
+    padding:2%;
+}
+footer {
+    background-color:black;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px;
+    margin-top:-100px;
+}
