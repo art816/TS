@@ -1,0 +1,30 @@
+#!/home/user/mini_project/virt/bin/python3.4
+
+# This is proprietary software.
+# Part of cluster monitoring project.
+# PEP8 codestyle used, python version 3.
+#
+# authors: dmitry khodakov <dmitryhd@gmail.com>
+
+""" Entry point of web interface application. """
+
+import sys
+sys.path.append('..')
+sys.path.append('.')
+
+from nms.web.app import WebApp
+from nms.utility import parse_args
+import nms.core.context as cont
+import nms.config as cfg
+
+
+def run_web():
+    """ Run web on current server. """
+    args = parse_args()
+    context = cont.ContextCreator(args.project_name).from_file()
+    webapp = WebApp(context, args.db_name)
+    webapp.run_web_server()
+
+
+if __name__ == '__main__':
+    run_web()

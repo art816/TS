@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/display.js"></script>
+<script src="/static/js/scrol.js"></script>
+
+<div class=page>
+    {% for param_cut in param_list  %}
+    <div class=title id={{param_cut}}> {{param_cut}}</div>
+    <div class=sub_title >
+        {% for param in parameters.values()  %}
+            {% if param_cut in param.name.upper() %}
+                <div class=param_name id={{param.name}}> {{param.name}}</div>
+                <div class=value> {{param.value}}</div>
+                <div class=buttom >
+                    <form action="{{ url_for('show_param', param_name=param.name) }}" method=post>
+                        <input type=submit name=name value='Change parameter'>
+                    </form>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+<div class=scrol_page id=warning>
+<fieldset>
+    <legend>Personal information:</legend>
+    <form action="{{ url_for('update_param') }}" method=post>
+            <dt>name:
+            <dd><input type=text name=name value="{{ param.name }}" readonly>
+            <dt>full_name:
+            <dd><input type=text name=full_name value="{{ param.full_name }}">
+            <dt>desc:
+            <dd><input type=text name=desc value="{{ param['desc'] }}">
+            <dt>identifier:
+            <dd><input type=text name=identifier value="{{ param.identifier }}">
+            <dt>units:
+            <dd><input type=text name=units value="{{ param.units }}">
+            <dd><input type=submit value=Update>
+    </form>
+</fieldset>
+</div>
+
+{% endblock %}:

@@ -1,0 +1,17 @@
+<html>
+    <head>
+        {% if title %}
+        <title>{{title}} - microblog</title>
+        {% else %}
+        <title>microblog</title>
+        {% endif %}
+        <link rel="stylesheet" type="text/css" href="/static/web.css" />
+        <link rel="stylesheet" type="text/css" href="/static/style.css" />
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Abril Fatface">
+    </head>
+    <body>
+        <div>Get: <a href="/index">list of parameters</a></div>
+        <hr>
+       {% block content %}{% endblock %}
+    </body>
+</html>

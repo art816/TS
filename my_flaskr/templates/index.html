@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+    <table border="1" class="table">
+    {% for device in devices  %}
+        <tr><th colspan="2" class="title">{{device}}</th></tr>
+        {% for param in devices[device].params_dict.values() %}
+            <tr><td>{{param.name}}</td><td>{{param.value}}</td></tr>
+        {% endfor %}
+        </p>
+    {% endfor %}
+{% endblock %}:
