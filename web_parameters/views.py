@@ -3,12 +3,12 @@ from flask import render_template, request, session, flash, redirect, url_for, a
 from flask import jsonify
 
 import sys
-sys.path.append('../NMS')
+# sys.path.append('../NMS')
 #sys.path.append('app/templates')
 
 #from nms.core.context import ContextCreator
 from flask import current_app as app
-from web_parameters import parameter_orm
+# from web_parameters import parameter_orm
 #from nms.core.parameters import configure_parameters
 
 #@app.route('/')
@@ -35,7 +35,7 @@ from web_parameters import parameter_orm
 def show_entries():
     """ Show all entries from database. """
     connect = app.db_manager.get_connect(app.config['DATABASE'])
-    cur = connect.execute('select id, title, text from entries order by id desc')
+    cur = connect.execute('select * from users order by id desc')
     entries = cur.fetchall()
     connect.commit()
     connect.close()
@@ -59,12 +59,24 @@ def login():
             return redirect(url_for('start'))
     return render_template('login.html', error=error)
 
+def registered_user():
+    """
+
+    :return:
+    """
+    if request.method == 'POST':
+        user_dict = dict(request.form)
+        print(user_dict)
+
+
+
 #@app.route('/logout')
 def logout():
     """ Logout to server. """
     session.pop('logged_in', None)
+    # session.pop('user_name', None)
     flash('You were logged out')
-    return redirect(url_for('show_entries'))
+    return redirect(url_for('start'))
 
 #@app.route('/get_num_entries')
 def get_num_entries():
@@ -128,7 +140,15 @@ def update_param():
     return redirect(url_for('show_param', param_name=name))
 
 def start():
+    # login = True
+    # if not session.get('logged_in'):
+    #     login = False
     return render_template('start.html')
+
+def task(user):
+    if not session.get('logged_in'):
+        abort(401)
+    return render_template('task.html')
 
 
 #def update_param():
@@ -141,12 +161,14 @@ def route(app):
     # app.add_url_rule('/index', 'main', index)
     app.add_url_rule('/entries', 'show_entries', show_entries)
     app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
+    app.add_url_rule('/registered_user', 'registered_user', registered_user, methods=['GET', 'POST'])
     app.add_url_rule('/logout', 'logout', logout)
     app.add_url_rule('/add', 'add_entry', add_entry, methods=['POST'])
     app.add_url_rule('/drop', 'drop_entry', drop_entry, methods=['POST'])
     app.add_url_rule('/show_param/<param_name>', 'show_param', show_param, methods=['GET', 'POST'])
     app.add_url_rule('/update_param', 'update_param', update_param, methods=['GET', 'POST'])
     app.add_url_rule('/start', 'start', start)
+    app.add_url_rule('/task/<user>', 'task', task)
     # Json
     app.add_url_rule('/get_num_entries', 'get_num_entries', get_num_entries)
 

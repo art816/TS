@@ -7,15 +7,15 @@
 <input type="checkbox" id="checkbox" checked> Треш угар и содомия))
 {% if not session.logged_in %}
 <div class=metanav style="background: red;">
-<a href="{{ url_for('login') }}">log in</a>
-{% else %}
-<div class=metanav style="background: green;">
-<a href="{{ url_for('logout') }}">log out</a>
-{% endif %}
-</div>
-{% for message in get_flashed_messages() %}
-<div class=flash>{{ message }}</div>
-{% endfor %}
-{% block body %}{% endblock %}
+    <a href="{{ url_for('login') }}">log in</a>
+    {% else %}
+    <div class=metanav style="background: green;">
+        <a href="{{ url_for('logout') }}">log out</a>
+        {% endif %}
+    </div>
+    {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+    {% endfor %}
+    {% block body %}{% endblock %}
 </div>
 </body>

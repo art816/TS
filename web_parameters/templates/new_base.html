@@ -3,6 +3,31 @@
         <link rel="stylesheet" type="text/css" href="/static/new_style.css" />
     </head>
     <body>
-       {% block content %}{% endblock %}
+        <header>
+        <h1>City Gallery</h1>
+            </header>
+
+        <nav>
+        <div> <a href="/start">Home page</a> </div>
+        <div> <a href="/login">Login</a> </div>
+        {% if session.logged_in %}
+            <div> <a href={{'/task/'+session.user_name}}>Task</a> </div>
+            <div> <a href='/logout'> Logout </a> </div>
+        {% endif %}
+
+        Tokyo<br>
+        </nav>
+
+        <section>
+            {% for message in get_flashed_messages() %}
+                <div class=flash>{{ message }}</div>
+            {% endfor %}
+            {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
+            {% block section %}{% endblock %}
+        </section>
+
+        <footer>
+            <div> Copyright © W3Schools.com </div>
+        </footer>
     </body>
 </html>

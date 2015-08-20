@@ -2,13 +2,10 @@
 
 import unittest
 from flask import Flask, g
-import sys
-sys.path.append('../NMS')
+import sqlite3
 
-from nms.core.context import ContextCreator
 from web_parameters import database
 from web_parameters import show_device_from_NMS
-from nms.core.parameters import configure_parameters
 from web_parameters import parameter_orm
 
 
@@ -20,8 +17,8 @@ class FlaskrTestCase(unittest.TestCase):
         app.config['TESTING'] = True
         self.app_test_client = app.test_client()
         self.app_test_client.db_manager = app.db_manager
-        context_creator = ContextCreator('buer')
-        self.context = context_creator.from_file()
+        # context_creator = ContextCreator('buer')
+        # self.context = context_creator.from_file()
 
     def test_empty_list_of_devices(self):
         """ Get davice name. """
@@ -34,23 +31,36 @@ class FlaskrTestCase(unittest.TestCase):
     def test_entries(self):
         """ Get all data from /entries.
             Assert add new entries. """
-        for url in ['/entries']:
-            return_data = self.app_test_client.get(url)
-            string_with_data = str(return_data.data)
-            for device in self.context.devices:
-                for param in self.context.devices[device].params_dict:
-                    self.assertTrue(param in string_with_data)
-    
+        string_with_data = self.get_data_from_page('/entries')
+        for device in self.context.devices:
+            for param in self.context.devices[device].params_dict:
+                self.assertTrue(param in string_with_data)
+
+    def get_data_from_page(self, url):
+        """
+        Return str with data from page(url)
+        """
+        return_data = self.app_test_client.get(url)
+        return str(return_data.data)
+
+    def test_visible_parameter(self):
+        self.logout()
+        string_with_data = self.get_data_from_page('/start')
+        self.assertFalse('Task' in string_with_data)
+        self.login('user', '111111')
+        string_with_data = self.get_data_from_page('/start')
+        self.assertTrue('Task' in string_with_data)
+
     def test_login(self):
         """ """
         rv = self.login('user', '111111')
-        self.assertTrue( 'You were logged in' in str(rv.data))
+        self.assertTrue('You were logged in' in str(rv.data))
         rv = self.logout()
-        self.assertTrue( 'You were logged out' in str(rv.data))
+        self.assertTrue('You were logged out' in str(rv.data))
         rv = self.login('adminx', 'default')
-        self.assertTrue( 'Invalid username' in str(rv.data))
+        self.assertTrue('Invalid username' in str(rv.data))
         rv = self.login('user', 'defaultx')
-        self.assertTrue( 'Invalid password' in str(rv.data))
+        self.assertTrue('Invalid password' in str(rv.data))
 
     def login(self, username, password):
         return self.app_test_client.post('/login', data=dict(
@@ -60,6 +70,22 @@ class FlaskrTestCase(unittest.TestCase):
     
     def logout(self):
         return self.app_test_client.get('/logout', follow_redirects=True)
+
+    def registered(self, user_dict):
+        return self.app_test_client.post('/registered_user', user_dict,
+            follow_redirects=True)
+
+    def test_registered(self):
+        """
+        """
+        user_dict = dict(user_name='art212321',
+                          user_s_name='123',
+                          user_password='art',
+                          user_class=12,
+                          user_mail='1233@ase')
+        rv = self.registered(user_dict)
+        self.assertTrue('You were registered' in str(rv.data))
+
 
     def test_messages(self):
         self.app_test_client.db_manager.get_connect(self.db_name)
@@ -118,14 +144,22 @@ class TestORM(unittest.TestCase):
                 session.add(orm_param)
         app.orm_parameters = orm_parameters
 
+
+
+
+
+
+
+
+
+
+
 class DBTest(unittest.TestCase):
     """ Test database. """
     def setUp(self):
         self.app = Flask(__name__)
         self.app.config.from_object('web_parameters.config')
         self.db_name = self.app.config['DATABASE']
-        context_creator = ContextCreator('buer')
-        self.context = context_creator.from_file()
         self.db_manager = database.DatabaseManager(self.app)
 
     def tearDown(self):
@@ -136,11 +170,73 @@ class DBTest(unittest.TestCase):
         """ Get db. """
         self.assertTrue(self.db_manager.get_connect(self.db_name))
 
+    def test_insert(self):
+        """
+
+        :return:
+        """
+        connect = self.db_manager.get_connect(self.db_name)
+        connect.execute("insert into users (user_name, user_s_name, user_password) values (?, ?, ?)",
+                        ['art', 'art', 'art'])
+        entries = self.db_manager.get_all_entries('users')
+        self.assertEqual((entries[-1]['user_name'], entries[-1]['user_password']),
+                         ('art', 'art'))
+
+    def test_double_insert(self):
+        """
+        Try insert two entries with idential user_name
+        :return:
+        """
+        connect = self.db_manager.get_connect(self.db_name)
+        connect.execute(("insert into users (user_name, user_s_name, user_password)"
+                         "values (?, ?, ?)"),
+                        ['art5', 'art', 'art'])
+        try:
+            connect.execute(("insert into users (user_name, user_s_name, user_password)"
+                             " values (?, ?, ?)"),
+                            ['art5', 'art', 'art'])
+        except sqlite3.IntegrityError:
+            print("You try insert not unique user")
+        else:
+            self.assertTrue(False, "insert not unique user")
+
+
+    #TODO nothing assert
     def test_drop_table(self):
         """ Drop table. """
         self.db_manager.get_connect(self.db_name)
         self.assertTrue(hasattr(self.db_manager, 'conn'))
         self.db_manager.drop_table_with_data()
+
+    def test_get_all_data(self):
+        """
+        :return:
+        """
+        table_name = 'users'
+        first_data = dict(id=1,
+                          user_name='art2',
+                          user_s_name='123',
+                          user_password='art',
+                          user_class=12,
+                          user_mail='1233@ase')
+        second_data = dict(id=2,
+                           user_name='art3',
+                           user_s_name='123',
+                           user_password='art',
+                           user_class=12,
+                           user_mail='1233@ase')
+        self.db_manager.get_connect(self.db_name)
+        self.db_manager.drop_table_with_data()
+        self.db_manager.get_connect(self.db_name)
+        self.db_manager.insert(table_name, first_data)
+        self.db_manager.insert(table_name, second_data)
+        res = self.db_manager.get_all_entries('users')
+        list_res = list(res)
+        self.assertEqual(dict(list_res[0]), first_data)
+        self.assertEqual(dict(list_res[1]), second_data)
+        self.assertEqual(len(list_res), 2)
+
+
         
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,5 @@
-create table if not exists entries (
+create table if not exists users (
     id integer primary key autoincrement,
-    title text,
-    text text
+    users text unique key,
+    password text
     );

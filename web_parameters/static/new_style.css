@@ -17,13 +17,13 @@ nav {
     height:300px;
     width:20%;
     float:left;
-    padding:2%;
-    min-height:90%;
+    padding:1%;
+    min-height:100%;
 }
 section {
     width:75%;
     float:left;
-    padding:2%;
+    padding:1%;
 }
 footer {
     background-color:black;
