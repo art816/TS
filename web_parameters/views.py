@@ -66,7 +66,10 @@ def registered_user():
     """
     if request.method == 'POST':
         user_dict = dict(request.form)
-        print(user_dict)
+        app.db_manager.register_user(user_dict)
+        print("TEST_DATA=", user_dict)
+        return render_template('start.html')
+    return render_template('registered.html')
 
 
 

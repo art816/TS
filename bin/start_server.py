@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 sys.path.append('.')
-sys.path.append('..')
 
 from web_parameters import show_device_from_NMS
 import web_parameters

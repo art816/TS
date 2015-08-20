@@ -15,9 +15,16 @@ class DatabaseManager(object):
         db_manager = DatabaseManager(app)
         conn = db_manager.get_connection()
     """
+    #TODO
+    """
+    Сделать коннект к базе данных при старте сервиса.
+    Получать имя базы данных в этот же момент.
+    """
     def __init__(self, app):
-        self.schema_file = open('web_parameters/schema.sql', 'r').read()
+        self.schema_file = open('D:/Work_D/TS/web_parameters/schema.sql', 'r').read()
         self.conn = None
+        # self.db_name = app.config['DATABASE']
+        # self.get_connect(app.config['DATABASE'])
         # self.engine = alch.create_engine('sqlite:///test_sqlite')
 
     def close_connect(self):
@@ -33,6 +40,7 @@ class DatabaseManager(object):
     def get_connect(self, db_name):
         """ Connect to DATABASE and return it"""
         self.conn = sqlite3.connect(db_name)
+        print(db_name)
         self.conn.row_factory = sqlite3.Row
         self.conn.cursor().executescript(self.schema_file)
         return self.conn

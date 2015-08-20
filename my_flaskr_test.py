@@ -13,7 +13,7 @@ class FlaskrTestCase(unittest.TestCase):
     """ Test flaskr. """
     def setUp(self):
         app = show_device_from_NMS.configure_app()
-        self.db_name = app.config['DATABASE']
+        self.db_name = app.config['TEST_DATABASE']
         app.config['TESTING'] = True
         self.app_test_client = app.test_client()
         self.app_test_client.db_manager = app.db_manager
@@ -72,7 +72,7 @@ class FlaskrTestCase(unittest.TestCase):
         return self.app_test_client.get('/logout', follow_redirects=True)
 
     def registered(self, user_dict):
-        return self.app_test_client.post('/registered_user', user_dict,
+        return self.app_test_client.post('/registered_user', data=user_dict,
             follow_redirects=True)
 
     def test_registered(self):
@@ -159,7 +159,7 @@ class DBTest(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
         self.app.config.from_object('web_parameters.config')
-        self.db_name = self.app.config['DATABASE']
+        self.db_name = self.app.config['TEST_DATABASE']
         self.db_manager = database.DatabaseManager(self.app)
 
     def tearDown(self):
