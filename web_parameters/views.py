@@ -31,6 +31,8 @@ from flask import current_app as app
 #                            parameters=table_param_dict,
 #                            param_list=param_name_list)
 
+#TODO сделать разлогинивание при перезапуске сервиса
+
 #@app.route('/entries')
 def show_entries():
     """ Show all entries from database. """
@@ -66,12 +68,22 @@ def registered_user():
     """
     if request.method == 'POST':
         user_dict = dict(request.form)
-        app.db_manager.register_user(user_dict)
-        print("TEST_DATA=", user_dict)
-        return render_template('start.html')
+        if app.db_manager.register_user(user_dict) == \
+                "You try insert not unique user":
+            flash("You try insert not unique user")
+            return redirect(url_for('registered_user'))
+        else:
+            flash('You were registered')
+        return redirect(url_for('user_data', user_name=
+                                                user_dict['user_name'],
+                                             user_s_name=
+                                                user_dict['user_s_name']))
     return render_template('registered.html')
 
-
+def user_data(user_name, user_s_name):
+    print('user_name=', user_name, user_s_name)
+    res = app.db_manager.get_entry('users', user_name, user_s_name)
+    return render_template('user_data.html', user_data=res[0])
 
 #@app.route('/logout')
 def logout():
@@ -165,6 +177,7 @@ def route(app):
     app.add_url_rule('/entries', 'show_entries', show_entries)
     app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
     app.add_url_rule('/registered_user', 'registered_user', registered_user, methods=['GET', 'POST'])
+    app.add_url_rule('/user_data/<user_name>/<user_s_name>', 'user_data', user_data, methods=['GET', 'POST'])
     app.add_url_rule('/logout', 'logout', logout)
     app.add_url_rule('/add', 'add_entry', add_entry, methods=['POST'])
     app.add_url_rule('/drop', 'drop_entry', drop_entry, methods=['POST'])

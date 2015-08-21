@@ -1,0 +1,22 @@
+{% extends "new_base.html" %}
+{% block section %}
+<fieldset>
+    <legend><h2>User_data</h2></legend>
+    <form>
+        <dl>
+            <dt>Username:
+            <dd><input type=text name=user_name value="{{user_data.user_name}}" readonly>
+            <dt>User_s_name:
+            <dd><input type=text name=user_s_name value="{{user_data.user_s_name}}" readonly>
+            <dt>User_class:
+            <dd><input type=text name=user_class value="{{user_data.user_class}}" readonly>
+            <dt>User_mail:
+            <dd><input type=text name=user_mail value="{{user_data.user_mail}}" readonly>
+            <dt>Password:
+            <dd><input type=text name=user_password value="{{user_data.user_password}}" readonly>
+        </dl>
+    </form>
+</fieldset>
+<!--<img src="/static/3d_sphere-wide.jpg" alt="Маленькая картинка"-->
+<!--title="Маленькая картинка" width=100%>'-->
+{% endblock %}

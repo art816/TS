@@ -11,14 +11,23 @@ from web_parameters import parameter_orm
 
 class FlaskrTestCase(unittest.TestCase):
     """ Test flaskr. """
-    def setUp(self):
-        app = show_device_from_NMS.configure_app()
-        self.db_name = app.config['TEST_DATABASE']
+    @classmethod
+    def setUpClass(cls):
+        app = show_device_from_NMS.configure_app(db_name='TEST_DATABASE')
+        # self.app.db_name = app.config['TEST_DATABASE']
         app.config['TESTING'] = True
-        self.app_test_client = app.test_client()
-        self.app_test_client.db_manager = app.db_manager
+        cls.app_test_client = app.test_client()
+        cls.app_test_client.db_manager = app.db_manager
+        cls.app_test_client.db_manager.get_connect()
         # context_creator = ContextCreator('buer')
         # self.context = context_creator.from_file()
+
+    @classmethod
+    def tearDownClass(cls):
+        """ """
+        cls.app_test_client.db_manager.drop_table_with_data()
+        cls.app_test_client.db_manager.close_connect()
+
 
     def test_empty_list_of_devices(self):
         """ Get davice name. """
@@ -55,6 +64,7 @@ class FlaskrTestCase(unittest.TestCase):
         """ """
         rv = self.login('user', '111111')
         self.assertTrue('You were logged in' in str(rv.data))
+        self.assertTrue('User=user' in str(rv.data))
         rv = self.logout()
         self.assertTrue('You were logged out' in str(rv.data))
         rv = self.login('adminx', 'default')
@@ -79,17 +89,19 @@ class FlaskrTestCase(unittest.TestCase):
         """
         """
         user_dict = dict(user_name='art212321',
-                          user_s_name='123',
+                          user_s_name='123123',
                           user_password='art',
                           user_class=12,
                           user_mail='1233@ase')
         rv = self.registered(user_dict)
         self.assertTrue('You were registered' in str(rv.data))
+        for val in user_dict.values():
+            self.assertTrue(str(val) in str(rv.data))
 
 
     def test_messages(self):
-        self.app_test_client.db_manager.get_connect(self.db_name)
-        self.app_test_client.db_manager.drop_table_with_data()
+        # self.app_test_client.db_manager.get_connect()
+        # self.app_test_client.db_manager.drop_table_with_data()
         
         self.login('user','111111')
         rv = self.app_test_client.post('/add', data=dict(
@@ -159,54 +171,63 @@ class DBTest(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
         self.app.config.from_object('web_parameters.config')
-        self.db_name = self.app.config['TEST_DATABASE']
-        self.db_manager = database.DatabaseManager(self.app)
+        self.app.db_name = self.app.config['TEST_DATABASE']
+        self.app.db_manager = database.DatabaseManager(self.app)
 
     def tearDown(self):
         """ """
-        self.db_manager.close_connect()
+        self.app.db_manager.close_connect()
 
     def test_init_db(self):
         """ Get db. """
-        self.assertTrue(self.db_manager.get_connect(self.db_name))
+        self.assertTrue(self.app.db_manager.get_connect())
 
     def test_insert(self):
         """
 
         :return:
         """
-        connect = self.db_manager.get_connect(self.db_name)
-        connect.execute("insert into users (user_name, user_s_name, user_password) values (?, ?, ?)",
-                        ['art', 'art', 'art'])
-        entries = self.db_manager.get_all_entries('users')
+        user_dict = dict(zip(['user_name', 'user_s_name', 'user_password'],
+                             ['art', 'art', 'art']))
+        self.app.db_manager.get_connect()
+        self.app.db_manager.insert('users', user_dict)
+        entries = self.app.db_manager.get_all_entries('users')
         self.assertEqual((entries[-1]['user_name'], entries[-1]['user_password']),
                          ('art', 'art'))
+
+    def test_get_entry(self):
+        """
+        :return:
+        """
+        user_dict = dict(zip(['user_name', 'user_s_name', 'user_password'],
+                             ['art', 'art', 'art']))
+        self.app.db_manager.get_connect()
+        self.app.db_manager.insert('users', user_dict)
+        entries = self.app.db_manager.get_entry('users', 'art', 'art')
+        self.assertEqual((entries[0]['user_name'], entries[0]['user_password']),
+                         ('art', 'art'))
+        self.assertEqual(len(entries), 1)
 
     def test_double_insert(self):
         """
         Try insert two entries with idential user_name
         :return:
         """
-        connect = self.db_manager.get_connect(self.db_name)
-        connect.execute(("insert into users (user_name, user_s_name, user_password)"
-                         "values (?, ?, ?)"),
-                        ['art5', 'art', 'art'])
-        try:
-            connect.execute(("insert into users (user_name, user_s_name, user_password)"
-                             " values (?, ?, ?)"),
-                            ['art5', 'art', 'art'])
-        except sqlite3.IntegrityError:
-            print("You try insert not unique user")
-        else:
-            self.assertTrue(False, "insert not unique user")
+        user_dict = dict(zip(['user_name', 'user_s_name', 'user_password'],
+                             ['art5', 'art', 'art']))
+        self.app.db_manager.get_connect()
+        self.app.db_manager.insert('users', user_dict)
+        self.assertEqual(self.app.db_manager.insert('users', user_dict),
+                         "You try insert not unique user",
+                         "insert not unique user")
 
 
     #TODO nothing assert
     def test_drop_table(self):
         """ Drop table. """
-        self.db_manager.get_connect(self.db_name)
-        self.assertTrue(hasattr(self.db_manager, 'conn'))
-        self.db_manager.drop_table_with_data()
+        self.app.db_manager.get_connect()
+        self.assertTrue(hasattr(self.app.db_manager, 'conn'))
+        self.app.db_manager.drop_table_with_data()
 
     def test_get_all_data(self):
         """
@@ -225,12 +246,12 @@ class DBTest(unittest.TestCase):
                            user_password='art',
                            user_class=12,
                            user_mail='1233@ase')
-        self.db_manager.get_connect(self.db_name)
-        self.db_manager.drop_table_with_data()
-        self.db_manager.get_connect(self.db_name)
-        self.db_manager.insert(table_name, first_data)
-        self.db_manager.insert(table_name, second_data)
-        res = self.db_manager.get_all_entries('users')
+        self.app.db_manager.get_connect()
+        self.app.db_manager.drop_table_with_data()
+        self.app.db_manager.get_connect()
+        self.app.db_manager.insert(table_name, first_data)
+        self.app.db_manager.insert(table_name, second_data)
+        res = self.app.db_manager.get_all_entries('users')
         list_res = list(res)
         self.assertEqual(dict(list_res[0]), first_data)
         self.assertEqual(dict(list_res[1]), second_data)

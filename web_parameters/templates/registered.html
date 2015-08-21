@@ -1,21 +1,24 @@
 {% extends "new_base.html" %}
 {% block section %}
-<h2>Login</h2>
-<form action="{{ url_for('registered_user') }}" method=post>
-    <dl>
-        <dt>Username:
-        <dd><input type=text name=user_name>
-        <dt>User_s_name:
-        <dd><input type=text name=user_s_name>
-        <dt>User_class:
-        <dd><input type=text name=user_class>
-        <dt>User_mail:
-        <dd><input type=text name=user_mail>
-        <dt>Password:
-        <dd><input type=password name=user_password>
-        <dd><input type=submit value=Registered>
-    </dl>
-</form>
+<fieldset>
+    <legend><h2>Registered</h2></legend>
+    <form action="{{ url_for('registered_user') }}" method=post>
+        <dl>
+            <dt>Username:
+            <dd><input type=text name=user_name>
+            <dt>User_s_name:
+            <dd><input type=text name=user_s_name>
+            <dt>User_class:
+            <dd><input type=text name=user_class>
+            <dt>User_mail:
+            <dd><input type=text name=user_mail>
+            <dt>Password:
+            <dd><input type=password name=user_password>
+                <p>
+            <dd><input type=submit value=Registered>
+        </dl>
+    </form>
+</fieldset>
 <!--<img src="/static/3d_sphere-wide.jpg" alt="Маленькая картинка"-->
-     <!--title="Маленькая картинка" width=100%>'-->
+<!--title="Маленькая картинка" width=100%>'-->
 {% endblock %}

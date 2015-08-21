@@ -4,8 +4,11 @@
     </head>
     <body>
         <header>
-        <h1>City Gallery</h1>
-            </header>
+            <h1>City Gallery</h1>
+            {% if session.logged_in %}
+                <div class="user"> User={{session.user_name}}</div>
+            {% endif %}
+        </header>
 
         <nav>
         <div> <a href="/start">Home page</a> </div>
