@@ -1,0 +1,25 @@
+{% extends "new_base.html" %}
+{% block section %}
+{% for user in user_data %}
+<fieldset>
+    <legend><h2>{{'User ' + '"' + user.user_name+ '"'}}</h2></legend>
+    <form>
+        <dl>
+            <dt>Username:
+            <dd><input type=text name=user_name value="{{user.user_name}}" readonly>
+            <dt>User_s_name:
+            <dd><input type=text name=user_s_name value="{{user.user_s_name}}" readonly>
+            <dt>User_class:
+            <dd><input type=text name=user_class value="{{user.user_class}}" readonly>
+            <dt>User_mail:
+            <dd><input type=text name=user_mail value="{{user.user_mail}}" readonly>
+            <dt>Password:
+            <dd><input type=text name=user_password value="{{user.user_password}}" readonly>
+        </dl>
+    </form>
+</fieldset>
+<p></p>
+{% endfor%}
+<!--<img src="/static/3d_sphere-wide.jpg" alt="Маленькая картинка"-->
+<!--title="Маленькая картинка" width=100%>'-->
+{% endblock %}

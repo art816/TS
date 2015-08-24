@@ -25,7 +25,7 @@ class FlaskrTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """ """
-        cls.app_test_client.db_manager.drop_table_with_data()
+        cls.app_test_client.db_manager.drop_table_with_data('users')
         cls.app_test_client.db_manager.close_connect()
 
 
@@ -88,11 +88,13 @@ class FlaskrTestCase(unittest.TestCase):
     def test_registered(self):
         """
         """
-        user_dict = dict(user_name='art212321',
-                          user_s_name='123123',
-                          user_password='art',
-                          user_class=12,
-                          user_mail='1233@ase')
+        user_dict = dict(
+            user_login='2123',
+            user_name='art212321',
+            user_s_name='123123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
         rv = self.registered(user_dict)
         self.assertTrue('You were registered' in str(rv.data))
         for val in user_dict.values():
@@ -119,6 +121,11 @@ class FlaskrTestCase(unittest.TestCase):
 
     def test_update_parameter(self):
         """ """
+
+    def test_show_user_data(self):
+        """ """
+        rv = self.app_test_client.get('/show_all_users')
+        self.assertTrue('200' in str(rv))
         
 
 
@@ -199,8 +206,13 @@ class DBTest(unittest.TestCase):
         """
         :return:
         """
-        user_dict = dict(zip(['user_name', 'user_s_name', 'user_password'],
-                             ['art', 'art', 'art']))
+        user_dict = dict(
+            user_login='1',
+            user_name='art',
+            user_s_name='art',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
         self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
         entries = self.app.db_manager.get_entry('users', 'art', 'art')
@@ -213,8 +225,13 @@ class DBTest(unittest.TestCase):
         Try insert two entries with idential user_name
         :return:
         """
-        user_dict = dict(zip(['user_name', 'user_s_name', 'user_password'],
-                             ['art5', 'art', 'art']))
+        user_dict = dict(
+            user_login='123213',
+            user_name='art5',
+            user_s_name='123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
         self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
         self.assertEqual(self.app.db_manager.insert('users', user_dict),
@@ -227,27 +244,31 @@ class DBTest(unittest.TestCase):
         """ Drop table. """
         self.app.db_manager.get_connect()
         self.assertTrue(hasattr(self.app.db_manager, 'conn'))
-        self.app.db_manager.drop_table_with_data()
+        self.app.db_manager.drop_table_with_data('users')
 
     def test_get_all_data(self):
         """
         :return:
         """
         table_name = 'users'
-        first_data = dict(id=1,
-                          user_name='art2',
-                          user_s_name='123',
-                          user_password='art',
-                          user_class=12,
-                          user_mail='1233@ase')
-        second_data = dict(id=2,
-                           user_name='art3',
-                           user_s_name='123',
-                           user_password='art',
-                           user_class=12,
-                           user_mail='1233@ase')
+        first_data = dict(
+            id=1,
+            user_login='2',
+            user_name='art2',
+            user_s_name='123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
+        second_data = dict(
+            id=2,
+            user_login='3',
+            user_name='art3',
+            user_s_name='123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
         self.app.db_manager.get_connect()
-        self.app.db_manager.drop_table_with_data()
+        self.app.db_manager.drop_table_with_data('users')
         self.app.db_manager.get_connect()
         self.app.db_manager.insert(table_name, first_data)
         self.app.db_manager.insert(table_name, second_data)

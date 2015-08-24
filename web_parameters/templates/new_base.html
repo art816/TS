@@ -6,7 +6,11 @@
         <header>
             <h1>City Gallery</h1>
             {% if session.logged_in %}
-                <div class="user"> User={{session.user_name}}</div>
+                {% if session.admin %}
+                    <div class="user"> Admin={{session.user_name}}</div>
+                {% else %}
+                    <div class="user"> User={{session.user_name}}</div>
+                {% endif %}
             {% endif %}
         </header>
 
@@ -16,6 +20,10 @@
         {% if session.logged_in %}
             <div> <a href={{'/task/'+session.user_name}}>Task</a> </div>
             <div> <a href='/logout'> Logout </a> </div>
+            <div> <a href='/user_data'> User_data </a> </div>
+        {% endif %}
+        {% if session.admin %}
+            <div> <a href='/show_all_users'> Show_all_users </a> </div>
         {% endif %}
         <div> <a href='/registered_user'> Registered </a> </div>
 

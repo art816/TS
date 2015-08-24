@@ -31,9 +31,8 @@ from flask import current_app as app
 #                            parameters=table_param_dict,
 #                            param_list=param_name_list)
 
-#TODO сделать разлогинивание при перезапуске сервиса
 
-#@app.route('/entries')
+#TODO сделать разлогинивание при перезапуске сервиса
 def show_entries():
     """ Show all entries from database. """
     connect = app.db_manager.get_connect(app.config['DATABASE'])
@@ -45,7 +44,7 @@ def show_entries():
                            entries=entries)
      #                      num_entries=num_entries)
 
-#@app.route('/login', methods=['GET', 'POST'])
+#TODO make find users in table users
 def login():
     """ Login to server. """
     error = None
@@ -57,6 +56,7 @@ def login():
         else:
             session['user_name'] = request.form['username']
             session['logged_in'] = True
+            session['admin'] = True
             flash('You were logged in')
             return redirect(url_for('start'))
     return render_template('login.html', error=error)
@@ -71,6 +71,7 @@ def registered_user():
         if app.db_manager.register_user(user_dict) == \
                 "You try insert not unique user":
             flash("You try insert not unique user")
+            print("You try insert not unique user")
             return redirect(url_for('registered_user'))
         else:
             flash('You were registered')
@@ -86,9 +87,12 @@ def user_data(user_name, user_s_name):
     return render_template('user_data.html', user_data=res[0])
 
 #@app.route('/logout')
-def logout():
+# @app.teard
+def logout(*args):
     """ Logout to server. """
+    print("logout()")
     session.pop('logged_in', None)
+    session.pop('admin', None)
     # session.pop('user_name', None)
     flash('You were logged out')
     return redirect(url_for('start'))
@@ -96,7 +100,7 @@ def logout():
 #@app.route('/get_num_entries')
 def get_num_entries():
     """ Get num entries. """
-    connect= app.db_manager.get_connect(app.config['DATABASE'])
+    connect = app.db_manager.get_connect(app.config['DATABASE'])
     cur = connect.execute('select id from entries order by id desc limit 1')
     id_num = cur.fetchone()['id']
     connect.commit()
@@ -114,7 +118,7 @@ def add_entry():
     connect = app.db_manager.get_connect(app.config['DATABASE'])
     connect.execute(
         'insert into entries (title, text) values (?, ?)',
-        ['{} says'.format(session['user_name']), 
+        ['{} says'.format(session['user_name']),
          '{}: {}'.format(request.form['title'], request.form['text'])])
     connect.commit()
     connect.close()
@@ -122,14 +126,15 @@ def add_entry():
     return redirect(url_for('show_entries'))
 
 #@app.route('/drop', methods=['POST'])
-def drop_entry():
-    """ Drop entries. """
+def drop_table(table_name):
+    """ Drop etable. """
+    print('\n\n\n\n\n', table_name, '\n\n\n\n\n')
     if not session.get('logged_in'):
         abort(401)
-    app.db_manager.get_connect(app.config['DATABASE'])
-    app.db_manager.drop_table_with_data()
-    flash('Table was dropped') 
-    return redirect(url_for('show_entries'))
+    app.db_manager.get_connect()
+    app.db_manager.drop_table_with_data(table_name)
+    flash('Table was dropped')
+    return redirect(url_for('start'))
 
 def show_param(param_name):
     """ """
@@ -165,6 +170,12 @@ def task(user):
         abort(401)
     return render_template('task.html')
 
+def show_all_users():
+    if not session.get('admin'):
+        abort(401)
+    res = app.db_manager.get_all_entries('users')
+    return render_template('all_user_data.html', user_data=res)
+
 
 #def update_param():
  #   (request.form['param_name'])
@@ -180,11 +191,13 @@ def route(app):
     app.add_url_rule('/user_data/<user_name>/<user_s_name>', 'user_data', user_data, methods=['GET', 'POST'])
     app.add_url_rule('/logout', 'logout', logout)
     app.add_url_rule('/add', 'add_entry', add_entry, methods=['POST'])
-    app.add_url_rule('/drop', 'drop_entry', drop_entry, methods=['POST'])
+    app.add_url_rule('/drop_table/<table_name>', 'drop_table', drop_table, methods=['GET', 'POST'])
     app.add_url_rule('/show_param/<param_name>', 'show_param', show_param, methods=['GET', 'POST'])
     app.add_url_rule('/update_param', 'update_param', update_param, methods=['GET', 'POST'])
     app.add_url_rule('/start', 'start', start)
     app.add_url_rule('/task/<user>', 'task', task)
+    app.add_url_rule('/show_all_users', 'show_all_users', show_all_users)
+
     # Json
     app.add_url_rule('/get_num_entries', 'get_num_entries', get_num_entries)
 

@@ -7,7 +7,7 @@ from web_parameters import database
 #from nms.core.parameters import configure_parameters
 
 
-def configure_app(db_name = None):
+def configure_app(db_name=None):
     app = Flask(__name__)
     app.config.from_object('web_parameters.config')
     if db_name == 'TEST_DATABASE':
@@ -22,8 +22,10 @@ def configure_app(db_name = None):
 
 
 def run_server():
+    print("rrrrrrrrrrrrrruuuuuuuunnnnnnnnn")
     app = configure_app()
-    app.db_manager.get_connect()
+    # app.db_manager.get_connect()
+    # app.do_teardown_appcontext = views.logout
     app.run(debug=True, )
 
 

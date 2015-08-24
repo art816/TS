@@ -27,15 +27,19 @@ class DatabaseManager(object):
         # self.get_connect(app.config['DATABASE'])
         # self.engine = alch.create_engine('sqlite:///test_sqlite')
 
-    def close_connect(self):
+    def close_connect(self, *args):
         """ Close connect. """
-        self.conn.commit()
-        self.conn.close()
+        if self.conn is not None:
+            self.conn.commit()
+            self.conn.close()
+            self.conn = None
 
-    def drop_table_with_data(self):
+    def drop_table_with_data(self, table_name):
         """ Drop table 'entries'. """
-        self.conn.execute('drop table if exists users')
-        self.conn.commit()
+        self.get_connect()
+        query = 'drop table if exists {}'.format(table_name)
+        self.conn.execute(query)
+        self.close_connect()
         print("DROP USERS")
 
     # TODO
@@ -45,21 +49,24 @@ class DatabaseManager(object):
         print(self.db_name)
         self.conn.row_factory = sqlite3.Row
         self.conn.cursor().executescript(self.schema_file)
+
+        print("try get connect")
         return self.conn
 
     def get_all_entries(self, table_name):
+        self.get_connect()
         res = self.conn.execute(
             "select * from {}".format(table_name)).fetchall()
-        self.conn.commit()
+        self.close_connect()
         return res
 
     def get_entry(self, table_name, user_name, user_s_name):
-
+        self.get_connect()
         query = "select * from {} where user_name='{}' and user_s_name='{}'".format(
                 table_name, user_name, user_s_name)
         print(query)
         res = self.conn.execute(query).fetchall()
-        self.conn.commit()
+        self.close_connect()
         return res
 
     def insert(self, table_name, data_dict):
@@ -79,10 +86,15 @@ class DatabaseManager(object):
         print(query)
         # self.get_connect()
         try:
+            self.get_connect()
             self.conn.execute(query)
-            self.conn.commit()
-        except sqlite3.IntegrityError:
-            return "You try insert not unique user"
+            self.close_connect()
+        except sqlite3.IntegrityError as a:
+            for res in a.args:
+                if 'UNIQUE constraint failed' in res:
+                    return "You try insert not unique user"
+
+
 
     def register_user(self, data_dict):
         """
@@ -90,6 +102,7 @@ class DatabaseManager(object):
         :param data_dict:
         :return:
         """
+        # if
         "Распаковка словаря. По умолчанию значения словаря содержатся в листе"
         for key in data_dict:
             data_dict[key] = data_dict[key][0]
