@@ -20,7 +20,9 @@
         {% if session.logged_in %}
             <div> <a href={{'/task/'+session.user_name}}>Task</a> </div>
             <div> <a href='/logout'> Logout </a> </div>
-            <div> <a href='/user_data'> User_data </a> </div>
+            {% if not session.admin %}
+                <div> <a href={{'/user_data/'+session.user_name}}> User_data </a> </div>
+            {% endif %}
         {% endif %}
         {% if session.admin %}
             <div> <a href='/show_all_users'> Show_all_users </a> </div>

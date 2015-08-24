@@ -17,6 +17,7 @@ def configure_app(db_name=None):
     else:
         app.db_name = app.config['DATABASE']
     app.db_manager = database.DatabaseManager(app)
+    app.users = app.db_manager.get_logins_all_users()
     views.route(app)   
     return app
 
@@ -24,7 +25,6 @@ def configure_app(db_name=None):
 def run_server():
     print("rrrrrrrrrrrrrruuuuuuuunnnnnnnnn")
     app = configure_app()
-    # app.db_manager.get_connect()
     # app.do_teardown_appcontext = views.logout
     app.run(debug=True, )
 

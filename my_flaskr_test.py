@@ -56,28 +56,42 @@ class FlaskrTestCase(unittest.TestCase):
         self.logout()
         string_with_data = self.get_data_from_page('/start')
         self.assertFalse('Task' in string_with_data)
-        self.login('user', '111111')
+        self.login('admin', '111111')
         string_with_data = self.get_data_from_page('/start')
         self.assertTrue('Task' in string_with_data)
 
     def test_login(self):
         """ """
-        rv = self.login('user', '111111')
+        rv = self.login('admin', '111111')
         self.assertTrue('You were logged in' in str(rv.data))
-        self.assertTrue('User=user' in str(rv.data))
+        self.assertTrue('Admin=admin' in str(rv.data))
         rv = self.logout()
         self.assertTrue('You were logged out' in str(rv.data))
         rv = self.login('adminx', 'default')
         self.assertTrue('Invalid username' in str(rv.data))
-        rv = self.login('user', 'defaultx')
+        rv = self.login('admin', 'defaultx')
         self.assertTrue('Invalid password' in str(rv.data))
+        user_dict = dict(
+            user_login='2123',
+            user_name='art212321',
+            user_s_name='123123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
+        rv = self.registered(user_dict)
+        self.assertTrue('You were registered' in str(rv.data))
+        rv = self.login('2123', 'art')
+        self.assertTrue('You were logged in' in str(rv.data))
+
+
 
     def login(self, username, password):
-        return self.app_test_client.post('/login', data=dict(
-                    username=username,
-                    password=password
-                    ), follow_redirects=True)
-    
+        return self.app_test_client.post('/login',
+            data=dict(
+                user_login=username,
+                password=password
+            ), follow_redirects=True)
+
     def logout(self):
         return self.app_test_client.get('/logout', follow_redirects=True)
 
@@ -99,13 +113,14 @@ class FlaskrTestCase(unittest.TestCase):
         self.assertTrue('You were registered' in str(rv.data))
         for val in user_dict.values():
             self.assertTrue(str(val) in str(rv.data))
+        #test add user in user_list
 
 
     def test_messages(self):
         # self.app_test_client.db_manager.get_connect()
         # self.app_test_client.db_manager.drop_table_with_data()
         
-        self.login('user','111111')
+        self.login('admin','111111')
         rv = self.app_test_client.post('/add', data=dict(
                     title='<Hello>',
                     text='<strong>HTML</strong> allowed here'
@@ -194,8 +209,15 @@ class DBTest(unittest.TestCase):
 
         :return:
         """
-        user_dict = dict(zip(['user_name', 'user_s_name', 'user_password'],
-                             ['art', 'art', 'art']))
+        self.app.db_manager.get_connect()
+        self.app.db_manager.drop_table_with_data('users')
+        user_dict = dict(
+            user_login='art',
+            user_name='art',
+            user_s_name='art',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
         self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
         entries = self.app.db_manager.get_all_entries('users')
@@ -207,7 +229,7 @@ class DBTest(unittest.TestCase):
         :return:
         """
         user_dict = dict(
-            user_login='1',
+            user_login='art',
             user_name='art',
             user_s_name='art',
             user_password='art',
@@ -215,7 +237,7 @@ class DBTest(unittest.TestCase):
             user_mail='1233@ase')
         self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
-        entries = self.app.db_manager.get_entry('users', 'art', 'art')
+        entries = self.app.db_manager.get_entry('users', 'art')
         self.assertEqual((entries[0]['user_name'], entries[0]['user_password']),
                          ('art', 'art'))
         self.assertEqual(len(entries), 1)
@@ -278,8 +300,58 @@ class DBTest(unittest.TestCase):
         self.assertEqual(dict(list_res[1]), second_data)
         self.assertEqual(len(list_res), 2)
 
+    def test_get_logins(self):
+        """
+        :return:
+        """
+        table_name = 'users'
+        first_data = dict(
+            id=1,
+            user_login='21214',
+            user_name='art2',
+            user_s_name='123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
+        second_data = dict(
+            id=2,
+            user_login='3',
+            user_name='art3',
+            user_s_name='123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
+        self.app.db_manager.get_connect()
+        self.app.db_manager.drop_table_with_data('users')
+        self.app.db_manager.get_connect()
+        self.app.db_manager.insert(table_name, first_data)
+        self.app.db_manager.insert(table_name, second_data)
+        res = self.app.db_manager.get_logins_all_users()
+        self.assertTrue(first_data['user_login'] in res, res)
+        self.assertTrue(second_data['user_login'] in res, res)
+        self.assertEqual(len(res), 2)
 
-        
+    def test_get_password(self):
+        """
+        :return:
+        """
+        table_name = 'users'
+        user_data = dict(
+            id=1,
+            user_login='21214',
+            user_name='art2',
+            user_s_name='123',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
+        self.app.db_manager.get_connect()
+        self.app.db_manager.drop_table_with_data('users')
+        self.app.db_manager.get_connect()
+        self.app.db_manager.insert(table_name, user_data)
+        res = self.app.db_manager.get_password(user_data['user_login'])
+        self.assertTrue(user_data['user_password'] in res, res)
+
+
 if __name__ == '__main__':
     unittest.main()
 

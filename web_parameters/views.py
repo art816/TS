@@ -1,35 +1,6 @@
-#rom app import app
 from flask import render_template, request, session, flash, redirect, url_for, abort, g
 from flask import jsonify
-
-import sys
-# sys.path.append('../NMS')
-#sys.path.append('app/templates')
-
-#from nms.core.context import ContextCreator
 from flask import current_app as app
-# from web_parameters import parameter_orm
-#from nms.core.parameters import configure_parameters
-
-#@app.route('/')
-#@app.route('/inodex')
-# def index():
-#     """ Show all device and parameters from buer_context"""
-#     table_param_dict = dict()
-#     with app.db_manager.sessionmaker() as session:
-#         session.expire_on_commit = False
-#         for orm_param in session.query(parameter_orm.Parameter).all():
-#             table_param_dict[orm_param.name] = orm_param
-#         if not table_param_dict:
-#             table_param_dict = parameter_orm.create_orm_parameters_dict(configure_parameters())
-#             for orm_param in table_param_dict.values():
-#                 session.add(orm_param)
-#         param_name_list = [param_name.upper()[:3] for param_name in table_param_dict]
-#         param_name_list = sorted(list(set(param_name_list)))
-#     return render_template('index.html',
-#                            title='Home',
-#                            parameters=table_param_dict,
-#                            param_list=param_name_list)
 
 
 #TODO сделать разлогинивание при перезапуске сервиса
@@ -42,28 +13,47 @@ def show_entries():
     connect.close()
     return render_template('show_entries.html',
                            entries=entries)
-     #                      num_entries=num_entries)
+
 
 #TODO make find users in table users
 def login():
     """ Login to server. """
     error = None
+    users = app.db_manager.get_logins_all_users()
     if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
+        #if admin
+        if request.form['user_login'] != app.config['USERNAME']:
             error = 'Invalid username'
         elif request.form['password'] != app.config['PASSWORD']:
             error = 'Invalid password'
         else:
-            session['user_name'] = request.form['username']
+            session['user_name'] = request.form['user_login']
             session['logged_in'] = True
             session['admin'] = True
             flash('You were logged in')
             return redirect(url_for('start'))
+        #if not admin
+        if error == 'Invalid username':
+            #TODO get logins ones
+            users = app.db_manager.get_logins_all_users()
+            if request.form['user_login'] not in users:
+                error = 'Invalid username'
+            elif request.form['password'] != app.db_manager.get_password(
+                    request.form['user_login']):
+                error = 'Invalid password'
+            else:
+                session['user_name'] = request.form['user_login']
+                session['logged_in'] = True
+                session.pop('admin', None)
+                flash('You were logged in')
+                return redirect(url_for('start'))
+
     return render_template('login.html', error=error)
+
 
 def registered_user():
     """
-
+    Registered new users.
     :return:
     """
     if request.method == 'POST':
@@ -75,29 +65,41 @@ def registered_user():
             return redirect(url_for('registered_user'))
         else:
             flash('You were registered')
-        return redirect(url_for('user_data', user_name=
-                                                user_dict['user_name'],
-                                             user_s_name=
-                                                user_dict['user_s_name']))
+        return redirect(url_for('user_data', user_login=
+                                                user_dict['user_login']))
     return render_template('registered.html')
 
-def user_data(user_name, user_s_name):
-    print('user_name=', user_name, user_s_name)
-    res = app.db_manager.get_entry('users', user_name, user_s_name)
+
+#TODO users must can look your data.
+def user_data(user_login):
+    """
+    Show user data
+    :param user_name:
+    :param user_s_name:
+    :return:
+    """
+    if not session.get('logged_in'):
+        abort(401)
+    if not session.get('admin'):
+        if session.get('user_name') != user_login:
+            abort(401)
+    print('user_login=', user_login)
+    res = app.db_manager.get_entry('users', user_login)
     return render_template('user_data.html', user_data=res[0])
 
-#@app.route('/logout')
-# @app.teard
+#TODO logout when app is closed.
 def logout(*args):
     """ Logout to server. """
     print("logout()")
     session.pop('logged_in', None)
     session.pop('admin', None)
+    session.pop('user_name', None)
     # session.pop('user_name', None)
     flash('You were logged out')
     return redirect(url_for('start'))
 
-#@app.route('/get_num_entries')
+
+#old method
 def get_num_entries():
     """ Get num entries. """
     connect = app.db_manager.get_connect(app.config['DATABASE'])
@@ -109,8 +111,7 @@ def get_num_entries():
     #x = time.time()
     return jsonify({'num_entries': id_num})
 
-
-#@app.route('/add', methods=['POST'])
+#old method
 def add_entry():
     """ Add entry. """
     if not session.get('logged_in'):
@@ -125,17 +126,20 @@ def add_entry():
     flash('New entry was successfully posted')
     return redirect(url_for('show_entries'))
 
-#@app.route('/drop', methods=['POST'])
+
 def drop_table(table_name):
-    """ Drop etable. """
-    print('\n\n\n\n\n', table_name, '\n\n\n\n\n')
+    """ Drop table. """
     if not session.get('logged_in'):
+        abort(401)
+    if not session.get('admin'):
         abort(401)
     app.db_manager.get_connect()
     app.db_manager.drop_table_with_data(table_name)
     flash('Table was dropped')
     return redirect(url_for('start'))
 
+
+#old method
 def show_param(param_name):
     """ """
     #(request.form['param_name'])
@@ -147,6 +151,8 @@ def show_param(param_name):
     return render_template('show_param.html', param=param)
     #return jsonify({'param': param})
 
+
+#od method
 def update_param():
     """ """
     name = request.form['name']
@@ -159,36 +165,48 @@ def update_param():
         flash('Parameter {} was updated'.format(name))
     return redirect(url_for('show_param', param_name=name))
 
+
+
 def start():
-    # login = True
-    # if not session.get('logged_in'):
-    #     login = False
+    """
+    Get start page.
+    :return:
+    """
     return render_template('start.html')
 
+
 def task(user):
+    """
+    Get page with task for user=user
+    /task/<user>
+    :param user:
+    :return:
+    """
     if not session.get('logged_in'):
         abort(401)
+    if not session.get('admin'):
+        if session.get('user_name') != user:
+            abort(401)
     return render_template('task.html')
 
+
 def show_all_users():
+    """
+    Show data all users.
+    :return:
+    """
     if not session.get('admin'):
         abort(401)
     res = app.db_manager.get_all_entries('users')
     return render_template('all_user_data.html', user_data=res)
 
 
-#def update_param():
- #   (request.form['param_name'])
-
-
 def route(app):
     """ Route. """
-    # app.add_url_rule('/', 'main', index)
-    # app.add_url_rule('/index', 'main', index)
     app.add_url_rule('/entries', 'show_entries', show_entries)
     app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
     app.add_url_rule('/registered_user', 'registered_user', registered_user, methods=['GET', 'POST'])
-    app.add_url_rule('/user_data/<user_name>/<user_s_name>', 'user_data', user_data, methods=['GET', 'POST'])
+    app.add_url_rule('/user_data/<user_login>', 'user_data', user_data, methods=['GET', 'POST'])
     app.add_url_rule('/logout', 'logout', logout)
     app.add_url_rule('/add', 'add_entry', add_entry, methods=['POST'])
     app.add_url_rule('/drop_table/<table_name>', 'drop_table', drop_table, methods=['GET', 'POST'])
@@ -197,7 +215,6 @@ def route(app):
     app.add_url_rule('/start', 'start', start)
     app.add_url_rule('/task/<user>', 'task', task)
     app.add_url_rule('/show_all_users', 'show_all_users', show_all_users)
-
     # Json
     app.add_url_rule('/get_num_entries', 'get_num_entries', get_num_entries)
 

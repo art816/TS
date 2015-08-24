@@ -60,14 +60,30 @@ class DatabaseManager(object):
         self.close_connect()
         return res
 
-    def get_entry(self, table_name, user_name, user_s_name):
+    def get_entry(self, table_name, user_login):
         self.get_connect()
-        query = "select * from {} where user_name='{}' and user_s_name='{}'".format(
-                table_name, user_name, user_s_name)
+        query = "select * from {} where user_login='{}'".format(
+                table_name, user_login)
         print(query)
         res = self.conn.execute(query).fetchall()
         self.close_connect()
         return res
+
+    def get_logins_all_users(self):
+        self.get_connect()
+        query = "select user_login from users"
+        res = self.conn.execute(query).fetchall()
+        self.close_connect()
+        return [entry['user_login'] for entry in res]
+
+    def get_password(self, user_login):
+        self.get_connect()
+        query = "select user_password from users where user_login='{}'".format(
+            user_login)
+        res = self.conn.execute(query).fetchall()
+        self.close_connect()
+        assert(len(res)==1)
+        return res[0]['user_password']
 
     def insert(self, table_name, data_dict):
         """

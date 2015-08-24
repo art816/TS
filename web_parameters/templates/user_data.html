@@ -1,12 +1,12 @@
 {% extends "new_base.html" %}
 {% block section %}
 <fieldset>
-    <legend><h2>User_data</h2></legend>
+    <legend><h2>{{'User ' + '"'+ user_data.user_login + '"'}}</h2></legend>
     <form>
         <dl>
-            <dt>Username:
+            <dt>User_login:
             <dd><input type=text name=user_login value="{{user_data.user_login}}" readonly>
-            <dt>Username:
+            <dt>User_name:
             <dd><input type=text name=user_name value="{{user_data.user_name}}" readonly>
             <dt>User_s_name:
             <dd><input type=text name=user_s_name value="{{user_data.user_s_name}}" readonly>
