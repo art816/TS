@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import sqlite3
+
 from flask import Flask, g
 from web_parameters import views
 from web_parameters import database
@@ -18,7 +18,7 @@ def configure_app(db_name=None):
         app.db_name = app.config['DATABASE']
     app.db_manager = database.DatabaseManager(app)
     app.users = app.db_manager.get_logins_all_users()
-    views.route(app)   
+    views.route(app)
     return app
 
 

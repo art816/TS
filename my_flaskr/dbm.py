@@ -1,18 +1,19 @@
 import sqlite3
 from flask import g
 
-class DBM(object):
 
+class DBM(object):
     def __init__(self, app):
         """ """
         self.app = app
         self.schema_file = open('my_flaskr/schema.sql', 'r').read()
+        self.init = None
 
     def close_db(self):
         """ """
         self.conn.commit
         self.conn.close
-    
+
     def drop_db(self):
         """ """
         self.conn.execute('drop table if exists entries')

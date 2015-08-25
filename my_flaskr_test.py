@@ -179,15 +179,6 @@ class TestORM(unittest.TestCase):
         app.orm_parameters = orm_parameters
 
 
-
-
-
-
-
-
-
-
-
 class DBTest(unittest.TestCase):
     """ Test database. """
     def setUp(self):

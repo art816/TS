@@ -7,7 +7,8 @@
 """ Database module. """
 
 import sqlite3
-import sqlalchemy as alch
+# import sqlalchemy as alch
+
 
 # TODO
 class DatabaseManager(object):
@@ -15,11 +16,12 @@ class DatabaseManager(object):
         db_manager = DatabaseManager(app)
         conn = db_manager.get_connection()
     """
-    #TODO
+    # TODO
     """
     Сделать коннект к базе данных при старте сервиса.
     Получать имя базы данных в этот же момент.
     """
+
     def __init__(self, app):
         self.schema_file = open('web_parameters/schema.sql', 'r').read()
         self.conn = None
@@ -37,7 +39,7 @@ class DatabaseManager(object):
     def drop_table_with_data(self, table_name):
         """ Drop table 'entries'. """
         self.get_connect()
-        query = 'drop table if exists {}'.format(table_name)
+        query = "drop table if exists '{}'".format(table_name)
         self.conn.execute(query)
         self.close_connect()
         print("DROP USERS")
@@ -56,14 +58,14 @@ class DatabaseManager(object):
     def get_all_entries(self, table_name):
         self.get_connect()
         res = self.conn.execute(
-            "select * from {}".format(table_name)).fetchall()
+            "select * from '{}'".format(table_name)).fetchall()
         self.close_connect()
         return res
 
     def get_entry(self, table_name, user_login):
         self.get_connect()
-        query = "select * from {} where user_login='{}'".format(
-                table_name, user_login)
+        query = "select * from '{}' where user_login='{}'".format(
+            table_name, user_login)
         print(query)
         res = self.conn.execute(query).fetchall()
         self.close_connect()
@@ -82,7 +84,7 @@ class DatabaseManager(object):
             user_login)
         res = self.conn.execute(query).fetchall()
         self.close_connect()
-        assert(len(res)==1)
+        assert (len(res) == 1)
         return res[0]['user_password']
 
     def insert(self, table_name, data_dict):
@@ -92,13 +94,16 @@ class DatabaseManager(object):
         :param data_dict:
         :return:
         """
-        query = "insert into {} {} values {}"
+        query = "insert into '{}' {} values {}"
         column_name = []
         data = []
         for key in data_dict:
-            column_name.append(key)
-            data.append(data_dict[key])
-        query = query.format(table_name, str(tuple(column_name)), str(tuple(data)))
+            column_name.append(str(key))
+            data.append(str(data_dict[key]))
+        query = query.format(
+            table_name,
+            str(tuple(column_name)),
+            str(tuple(data)))
         print(query)
         # self.get_connect()
         try:
@@ -109,8 +114,6 @@ class DatabaseManager(object):
             for res in a.args:
                 if 'UNIQUE constraint failed' in res:
                     return "You try insert not unique user"
-
-
 
     def register_user(self, data_dict):
         """

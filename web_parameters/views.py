@@ -1,9 +1,10 @@
-from flask import render_template, request, session, flash, redirect, url_for, abort, g
+from flask import render_template, request, session, flash, redirect, \
+    url_for, abort, g
 from flask import jsonify
 from flask import current_app as app
 
 
-#TODO сделать разлогинивание при перезапуске сервиса
+# TODO сделать разлогинивание при перезапуске сервиса
 def show_entries():
     """ Show all entries from database. """
     connect = app.db_manager.get_connect(app.config['DATABASE'])
@@ -19,7 +20,6 @@ def show_entries():
 def login():
     """ Login to server. """
     error = None
-    users = app.db_manager.get_logins_all_users()
     if request.method == 'POST':
         #if admin
         if request.form['user_login'] != app.config['USERNAME']:
@@ -65,8 +65,8 @@ def registered_user():
             return redirect(url_for('registered_user'))
         else:
             flash('You were registered')
-        return redirect(url_for('user_data', user_login=
-                                                user_dict['user_login']))
+        return redirect(url_for('user_data',
+                                user_login=user_dict['user_login']))
     return render_template('registered.html')
 
 
@@ -74,8 +74,7 @@ def registered_user():
 def user_data(user_login):
     """
     Show user data
-    :param user_name:
-    :param user_s_name:
+    user_login
     :return:
     """
     if not session.get('logged_in'):
@@ -86,6 +85,7 @@ def user_data(user_login):
     print('user_login=', user_login)
     res = app.db_manager.get_entry('users', user_login)
     return render_template('user_data.html', user_data=res[0])
+
 
 #TODO logout when app is closed.
 def logout(*args):
@@ -110,6 +110,7 @@ def get_num_entries():
     #import time
     #x = time.time()
     return jsonify({'num_entries': id_num})
+
 
 #old method
 def add_entry():
@@ -144,7 +145,9 @@ def show_param(param_name):
     """ """
     #(request.form['param_name'])
     connect = app.db_manager.get_connect(app.config['DATABASE'])
-    cur = connect.execute('select * from param where name == "{}" order by id desc'.format(param_name))
+    cur = connect.execute(
+        'select * from param where name == "{}" order by id desc'.format(
+            param_name))
     param = cur.fetchone()
     print(dir(param))
     #flash(param.name)
@@ -157,14 +160,14 @@ def update_param():
     """ """
     name = request.form['name']
     with app.db_manager.sessionmaker() as session:
-        orm_parameter = session.query(parameter_orm.Parameter).filter_by(name=name).one()
+        orm_parameter = session.query(parameter_orm.Parameter).filter_by(
+            name=name).one()
         orm_parameter.full_name = request.form['full_name']
         orm_parameter.desc = request.form['desc']
         orm_parameter.identifier = request.form['identifier']
         orm_parameter.units = request.form['units']
         flash('Parameter {} was updated'.format(name))
     return redirect(url_for('show_param', param_name=name))
-
 
 
 def start():
@@ -201,21 +204,31 @@ def show_all_users():
     return render_template('all_user_data.html', user_data=res)
 
 
-def route(app):
+def route(configure_app):
     """ Route. """
-    app.add_url_rule('/entries', 'show_entries', show_entries)
-    app.add_url_rule('/login', 'login', login, methods=['GET', 'POST'])
-    app.add_url_rule('/registered_user', 'registered_user', registered_user, methods=['GET', 'POST'])
-    app.add_url_rule('/user_data/<user_login>', 'user_data', user_data, methods=['GET', 'POST'])
-    app.add_url_rule('/logout', 'logout', logout)
-    app.add_url_rule('/add', 'add_entry', add_entry, methods=['POST'])
-    app.add_url_rule('/drop_table/<table_name>', 'drop_table', drop_table, methods=['GET', 'POST'])
-    app.add_url_rule('/show_param/<param_name>', 'show_param', show_param, methods=['GET', 'POST'])
-    app.add_url_rule('/update_param', 'update_param', update_param, methods=['GET', 'POST'])
-    app.add_url_rule('/start', 'start', start)
-    app.add_url_rule('/task/<user>', 'task', task)
-    app.add_url_rule('/show_all_users', 'show_all_users', show_all_users)
+    configure_app.add_url_rule('/entries', 'show_entries', show_entries)
+    configure_app.add_url_rule('/login', 'login',
+                               login, methods=['GET', 'POST'])
+    configure_app.add_url_rule('/registered_user',
+                               'registered_user', registered_user,
+                               methods=['GET', 'POST'])
+    configure_app.add_url_rule('/user_data/<user_login>', 'user_data',
+                               user_data, methods=['GET', 'POST'])
+    configure_app.add_url_rule('/logout', 'logout', logout)
+    configure_app.add_url_rule('/add', 'add_entry',
+                               add_entry, methods=['POST'])
+    configure_app.add_url_rule('/drop_table/<table_name>', 'drop_table',
+                               drop_table, methods=['GET', 'POST'])
+    configure_app.add_url_rule('/show_param/<param_name>', 'show_param',
+                               show_param, methods=['GET', 'POST'])
+    configure_app.add_url_rule('/update_param', 'update_param',
+                               update_param, methods=['GET', 'POST'])
+    configure_app.add_url_rule('/start', 'start', start)
+    configure_app.add_url_rule('/task/<user>', 'task', task)
+    configure_app.add_url_rule('/show_all_users', 'show_all_users',
+                               show_all_users)
     # Json
-    app.add_url_rule('/get_num_entries', 'get_num_entries', get_num_entries)
+    configure_app.add_url_rule('/get_num_entries', 'get_num_entries',
+                               get_num_entries)
 
 

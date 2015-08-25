@@ -11,10 +11,8 @@
 """ This module contain Parameters which are pure database objects.
 """
 
-import time
 import sqlalchemy as alch
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+# from sqlalchemy.ext.declarative import declarative_base
 from collections import OrderedDict
 
 
@@ -45,6 +43,7 @@ class Parameter(AbstractParameter, BASE):
         self.units = units
         self.value = value
 
+
 def create_orm_parameters_dict(parameter_dict):
     """ Return dict param_name : orm parameters  """
     orm_parameters = OrderedDict()
@@ -53,6 +52,7 @@ def create_orm_parameters_dict(parameter_dict):
     for name in name_list:
         orm_parameters[name] = create_orm_parameter(parameter_dict[name])
     return orm_parameters
+
 
 def create_orm_parameter(parameter):
     """ """
@@ -67,4 +67,3 @@ def create_orm_parameter(parameter):
         value = parameter.value
 
     return Parameter(name, full_name, desc, identifier, units, value)
-    
