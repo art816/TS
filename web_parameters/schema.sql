@@ -8,3 +8,11 @@ create table if not exists users (
     user_password text not NULL,
     UNIQUE (user_name, user_s_name)
     );
+
+create table if not exists tasks (
+    id integer primary key autoincrement,
+    time int not NULL,
+    user_login text not NULL UNIQUE,
+    user_task text not NULL,
+    user_value int
+    );

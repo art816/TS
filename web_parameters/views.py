@@ -57,17 +57,22 @@ def registered_user():
     :return:
     """
     if request.method == 'POST':
-        user_dict = dict(request.form)
-        if app.db_manager.register_user(user_dict) == \
-                "You try insert not unique user":
-            flash("You try insert not unique user")
-            print("You try insert not unique user")
-            return redirect(url_for('registered_user'))
-        else:
+        user_dict = reformat_dict(request.form)
+        answer = app.db_manager.register_user(user_dict)
+        print('answer=', answer)
+        if answer == 'Insert ok':
             flash('You were registered')
-        return redirect(url_for('user_data',
-                                user_login=user_dict['user_login']))
-    return render_template('registered.html')
+            return redirect(url_for('user_data',
+                                    user_login=user_dict['user_login']))
+        else:
+            flash(answer)
+            print(answer)
+            return redirect(url_for('registered_user', user_data=user_dict))
+    return render_template('registered.html', user_data=dict())
+
+
+def reformat_dict(request_form):
+
 
 
 #TODO users must can look your data.

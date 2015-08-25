@@ -39,7 +39,8 @@ class DatabaseManager(object):
     def drop_table_with_data(self, table_name):
         """ Drop table 'entries'. """
         self.get_connect()
-        query = "drop table if exists '{}'".format(table_name)
+        query = "drop table if exists '{}'".format(
+            table_name.replace('\'', '').replace('\"', ''))
         self.conn.execute(query)
         self.close_connect()
         print("DROP USERS")
@@ -47,25 +48,27 @@ class DatabaseManager(object):
     # TODO
     def get_connect(self):
         """ Connect to DATABASE and return it"""
+        print(sqlite3.__doc__)
         self.conn = sqlite3.connect(self.db_name)
         print(self.db_name)
         self.conn.row_factory = sqlite3.Row
         self.conn.cursor().executescript(self.schema_file)
-
         print("try get connect")
         return self.conn
 
     def get_all_entries(self, table_name):
         self.get_connect()
         res = self.conn.execute(
-            "select * from '{}'".format(table_name)).fetchall()
+            "select * from '{}'".format(
+                table_name.replace('\'', '').replace('\"', ''))).fetchall()
         self.close_connect()
         return res
 
     def get_entry(self, table_name, user_login):
         self.get_connect()
         query = "select * from '{}' where user_login='{}'".format(
-            table_name, user_login)
+            table_name.replace('\'', '').replace('\"', ''),
+            user_login.replace('\'', '').replace('\"', ''))
         print(query)
         res = self.conn.execute(query).fetchall()
         self.close_connect()
@@ -81,7 +84,7 @@ class DatabaseManager(object):
     def get_password(self, user_login):
         self.get_connect()
         query = "select user_password from users where user_login='{}'".format(
-            user_login)
+            user_login.replace('\'', '').replace('\"', ''))
         res = self.conn.execute(query).fetchall()
         self.close_connect()
         assert (len(res) == 1)
@@ -98,22 +101,31 @@ class DatabaseManager(object):
         column_name = []
         data = []
         for key in data_dict:
-            column_name.append(str(key))
-            data.append(str(data_dict[key]))
+            column_name.append(str(key).replace('\'', '').replace('\"', ''))
+            data.append(str(data_dict[key]).replace('\'', '').replace('\"', ''))
         query = query.format(
             table_name,
             str(tuple(column_name)),
             str(tuple(data)))
+        #('qewe',) -> ('qewe')
+        query = query.replace(',)', ')')
         print(query)
         # self.get_connect()
         try:
             self.get_connect()
             self.conn.execute(query)
             self.close_connect()
-        except sqlite3.IntegrityError as a:
-            for res in a.args:
+        except sqlite3.IntegrityError as answer:
+            for res in answer.args:
                 if 'UNIQUE constraint failed' in res:
                     return "You try insert not unique user"
+                if 'NOT NULL constraint failed' in res:
+                    ind = res.find('.')
+                    sql_error = 'NOT NULL constraint failed: {}'.format(
+                        res[ind+1:])
+                    return sql_error
+        else:
+            return 'Insert ok'
 
     def register_user(self, data_dict):
         """
@@ -122,7 +134,14 @@ class DatabaseManager(object):
         :return:
         """
         # if
+        user_data = dict()
         "Распаковка словаря. По умолчанию значения словаря содержатся в листе"
         for key in data_dict:
-            data_dict[key] = data_dict[key][0]
-        return self.insert('users', data_dict)
+            if data_dict[key][0]:
+                #экранируем все кавычки
+                data = str(data_dict[key][0])
+                user_data[key] = data
+        return self.insert('users', user_data)
+
+    def parser_args(self):
+        pass

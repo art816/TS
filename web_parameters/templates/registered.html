@@ -5,17 +5,17 @@
     <form action="{{ url_for('registered_user') }}" method=post>
         <dl>
             <dt>User_login:
-            <dd><input type=text name=user_login>
+            <dd><input type=text name=user_login value="{{user_data.user_login}}">
             <dt>Username:
-            <dd><input type=text name=user_name>
+            <dd><input type=text name=user_name value="{{user_data.user_name}}">
             <dt>User_s_name:
-            <dd><input type=text name=user_s_name>
+            <dd><input type=text name=user_s_name value="{{user_data.user_s_name}}">
             <dt>User_class:
-            <dd><input type=text name=user_class>
+            <dd><input type=text name=user_class value="{{user_data.user_class}}">
             <dt>User_mail:
-            <dd><input type=text name=user_mail>
+            <dd><input type=text name=user_mail value="{{user_data.user_mail}}">
             <dt>Password:
-            <dd><input type=password name=user_password>
+            <dd><input type=password name=user_password value="{{user_data.user_password}}">
                 <p>
             <dd><input type=submit value=Registered>
         </dl>
