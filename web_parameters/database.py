@@ -134,14 +134,7 @@ class DatabaseManager(object):
         :return:
         """
         # if
-        user_data = dict()
-        "Распаковка словаря. По умолчанию значения словаря содержатся в листе"
-        for key in data_dict:
-            if data_dict[key][0]:
-                #экранируем все кавычки
-                data = str(data_dict[key][0])
-                user_data[key] = data
-        return self.insert('users', user_data)
+        return self.insert('users', data_dict)
 
     def parser_args(self):
         pass

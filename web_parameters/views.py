@@ -72,7 +72,14 @@ def registered_user():
 
 
 def reformat_dict(request_form):
-
+    data_dict = dict(request_form)
+    user_data = dict()
+    "Распаковка словаря. По умолчанию значения словаря содержатся в листе"
+    for key in data_dict:
+        if data_dict[key][0]:
+            #экранируем все кавычки
+            user_data[key] = str(data_dict[key][0])
+    return user_data
 
 
 #TODO users must can look your data.
