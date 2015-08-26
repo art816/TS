@@ -7,6 +7,7 @@
 """ Database module. """
 
 import sqlite3
+import time
 # import sqlalchemy as alch
 
 
@@ -31,6 +32,7 @@ class DatabaseManager(object):
 
     def close_connect(self, *args):
         """ Close connect. """
+        print("close")
         if self.conn is not None:
             self.conn.commit()
             self.conn.close()
@@ -129,12 +131,24 @@ class DatabaseManager(object):
 
     def register_user(self, data_dict):
         """
-
         :param data_dict:
         :return:
         """
-        # if
         return self.insert('users', data_dict)
+
+    def add_task(self,  data_dict):
+        """
+        :param data_dict:
+        :return:
+        """
+        data_dict['time'] = time.ctime(time.time())
+        return self.insert('tasks', data_dict)
+
+    def get_all_task(self):
+        """
+        :return:
+        """
+        res = self.get_all_entries('tasks')
 
     def parser_args(self):
         pass

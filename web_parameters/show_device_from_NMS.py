@@ -3,6 +3,7 @@
 from flask import Flask, g
 from web_parameters import views
 from web_parameters import database
+import os
 #from web_parameters import parameter_orm
 #from nms.core.parameters import configure_parameters
 
@@ -17,7 +18,13 @@ def configure_app(db_name=None):
     else:
         app.db_name = app.config['DATABASE']
     app.db_manager = database.DatabaseManager(app)
-    app.users = app.db_manager.get_logins_all_users()
+    # app.secret_key = os.urandom(32)
+    print('secret_key=', app.secret_key)
+
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        app.db_manager.close_connect()
+
     views.route(app)
     return app
 

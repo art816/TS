@@ -11,6 +11,7 @@ from web_parameters import parameter_orm
 
 class FlaskrTestCase(unittest.TestCase):
     """ Test flaskr. """
+
     @classmethod
     def setUpClass(cls):
         app = show_device_from_NMS.configure_app(db_name='TEST_DATABASE')
@@ -341,6 +342,13 @@ class DBTest(unittest.TestCase):
         self.app.db_manager.insert(table_name, user_data)
         res = self.app.db_manager.get_password(user_data['user_login'])
         self.assertTrue(user_data['user_password'] in res, res)
+
+    def test_det_all_tasks(self):
+        """
+
+        :return:
+        """
+        self.assertTrue(False)
 
 
 if __name__ == '__main__':

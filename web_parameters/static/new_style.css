@@ -74,4 +74,9 @@ tr {
      float: left;
      text-align: center;
      border: 1px solid black;
+}
 
+.task {
+    width: 100%;
+    resize: vertical;
+}

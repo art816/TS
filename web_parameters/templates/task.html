@@ -2,14 +2,14 @@
 {% block section %}
 
     <h1>Task</h1>
-    {% if session.logged_in %}
+    {% if session.admin %}
         <form action="{{ url_for('add_task') }}" method=post class=add-entry>
             <dl>
-                <dt>Title :
-                <dd><input type=text size=30 name=title>
-                <dt>Text:
-                <dd><textarea name=text rows=5 cols=400></textarea>
-                <dd><input type=submit value=Share>
+                <dt>User:
+                <dd><textarea class=task name=user_login></textarea>
+                <dt>Task:
+                <dd><textarea class=task name=user_task></textarea>
+                <dd><input type=submit value=Add>
             </dl>
         </form>
         <form action="{{ url_for('add_task') }}" method=post width=45%>
@@ -19,7 +19,7 @@
     <div class=title> </div>
     <table class=sub_title>
         <tr>
-            {% for name in ['id', 'task', 'value'] %}
+            {% for name in ['id', 'time', 'task', 'value'] %}
                 <th> {{name}} </th>
             {% endfor %}
         </tr>

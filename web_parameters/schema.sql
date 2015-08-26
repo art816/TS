@@ -11,8 +11,8 @@ create table if not exists users (
 
 create table if not exists tasks (
     id integer primary key autoincrement,
-    time int not NULL,
-    user_login text not NULL UNIQUE,
+    time text not NULL,
+    user_login text not NULL,
     user_task text not NULL,
     user_value int
     );

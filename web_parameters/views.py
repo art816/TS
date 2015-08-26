@@ -67,7 +67,7 @@ def registered_user():
         else:
             flash(answer)
             print(answer)
-            return redirect(url_for('registered_user', user_data=user_dict))
+            return render_template('registered.html', user_data=user_dict)
     return render_template('registered.html', user_data=dict())
 
 
@@ -78,7 +78,7 @@ def reformat_dict(request_form):
     for key in data_dict:
         if data_dict[key][0]:
             #экранируем все кавычки
-            user_data[key] = str(data_dict[key][0])
+            user_data[key] = data_dict[key][0]
     return user_data
 
 
@@ -187,6 +187,7 @@ def start():
     Get start page.
     :return:
     """
+    print(request.args)
     return render_template('start.html')
 
 
@@ -202,7 +203,23 @@ def task(user):
     if not session.get('admin'):
         if session.get('user_name') != user:
             abort(401)
+
     return render_template('task.html')
+
+
+def add_task():
+    if session.get('admin'):
+        if request.method == 'POST':
+            user_dict = reformat_dict(request.form)
+            answer = app.db_manager.add_task(user_dict)
+            print('answer=', answer)
+            if answer == 'Insert ok':
+                flash('You were registered')
+            else:
+                flash(answer)
+                print(answer)
+            return redirect(url_for('task', user=user_dict['user_login']))
+    return redirect(url_for('task'))
 
 
 def show_all_users():
@@ -239,6 +256,8 @@ def route(configure_app):
     configure_app.add_url_rule('/task/<user>', 'task', task)
     configure_app.add_url_rule('/show_all_users', 'show_all_users',
                                show_all_users)
+    configure_app.add_url_rule('/add_task', 'add_task',
+                               add_task, methods=['POST'])
     # Json
     configure_app.add_url_rule('/get_num_entries', 'get_num_entries',
                                get_num_entries)
