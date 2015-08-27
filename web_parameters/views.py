@@ -57,7 +57,7 @@ def registered_user():
     :return:
     """
     if request.method == 'POST':
-        user_dict = reformat_dict(request.form)
+        user_dict = reformat_request_dict(request.form)
         answer = app.db_manager.register_user(user_dict)
         print('answer=', answer)
         if answer == 'Insert ok':
@@ -71,7 +71,7 @@ def registered_user():
     return render_template('registered.html', user_data=dict())
 
 
-def reformat_dict(request_form):
+def reformat_request_dict(request_form):
     data_dict = dict(request_form)
     user_data = dict()
     "Распаковка словаря. По умолчанию значения словаря содержатся в листе"
@@ -198,34 +198,91 @@ def task(user):
     :param user:
     :return:
     """
+    tasks = []
+    users = []
+
     if not session.get('logged_in'):
         abort(401)
-    if not session.get('admin'):
+    elif not session.get('admin'):
         if session.get('user_name') != user:
             abort(401)
+    else:
+        users = app.db_manager.get_logins_all_users()
 
-    return render_template('task.html')
+    #todo make reserved name
+    print(app.config["COLOR_SCHEMA"])
+    if user == 'admin':
+        tasks = app.db_manager.get_all_tasks()
+    else:
+        tasks = app.db_manager.get_tasks_by_user(user=user)
+    return render_template('task.html', tasks=tasks, users=users, color_schema=app.config["COLOR_SCHEMA"])
 
 
 def add_task():
+    """
+        Add task for user.
+        :return:
+    """
     if session.get('admin'):
         if request.method == 'POST':
-            user_dict = reformat_dict(request.form)
+            user_dict = reformat_request_dict(request.form)
+            user_dict['user_value'] = '0'
             answer = app.db_manager.add_task(user_dict)
             print('answer=', answer)
             if answer == 'Insert ok':
-                flash('You were registered')
+                flash(answer)
             else:
                 flash(answer)
                 print(answer)
-            return redirect(url_for('task', user=user_dict['user_login']))
-    return redirect(url_for('task'))
+            return redirect(url_for('task', user='admin'))
+    else:
+        abort(401)
+
+def delete_task():
+    """
+        Add task for user.
+        :return:
+    """
+    if session.get('admin'):
+        if request.method == 'POST':
+            user_dict = reformat_request_dict(request.form)
+            answer = app.db_manager.delete_entry('tasks', user_dict['id'])
+            print('answer=', answer)
+            if answer == 'Delete ok':
+                flash(answer)
+            else:
+                flash(answer)
+                print(answer)
+            return redirect(url_for('task', user='admin'))
+    else:
+        abort(401)
+
+def update_task():
+    """
+        Add task for user.
+        :return:
+    """
+    if session.get('admin'):
+        if request.method == 'POST':
+            user_dict = reformat_request_dict(request.form)
+            answer = app.db_manager.update_table('tasks', user_dict['column_name'],
+                user_dict['data'], user_dict['id'])
+            print('answer=', answer)
+            if answer == 'Update ok':
+                flash(answer)
+            else:
+                flash(answer)
+                print(answer)
+            return redirect(url_for('task', user='admin'))
+    else:
+        abort(401)
+
 
 
 def show_all_users():
     """
-    Show data all users.
-    :return:
+        Show data all users.
+        :return:
     """
     if not session.get('admin'):
         abort(401)
@@ -258,6 +315,10 @@ def route(configure_app):
                                show_all_users)
     configure_app.add_url_rule('/add_task', 'add_task',
                                add_task, methods=['POST'])
+    configure_app.add_url_rule('/update_task', 'update_task',
+                               update_task, methods=['POST'])
+    configure_app.add_url_rule('/delete_task', 'delete_task',
+                               delete_task, methods=['POST'])
     # Json
     configure_app.add_url_rule('/get_num_entries', 'get_num_entries',
                                get_num_entries)

@@ -201,7 +201,6 @@ class DBTest(unittest.TestCase):
 
         :return:
         """
-        self.app.db_manager.get_connect()
         self.app.db_manager.drop_table_with_data('users')
         user_dict = dict(
             user_login='art',
@@ -210,7 +209,6 @@ class DBTest(unittest.TestCase):
             user_password='art',
             user_class=12,
             user_mail='1233@ase')
-        self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
         entries = self.app.db_manager.get_all_entries('users')
         self.assertEqual((entries[-1]['user_name'], entries[-1]['user_password']),
@@ -227,7 +225,6 @@ class DBTest(unittest.TestCase):
             user_password='art',
             user_class=12,
             user_mail='1233@ase')
-        self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
         entries = self.app.db_manager.get_entry('users', 'art')
         self.assertEqual((entries[0]['user_name'], entries[0]['user_password']),
@@ -246,7 +243,6 @@ class DBTest(unittest.TestCase):
             user_password='art',
             user_class=12,
             user_mail='1233@ase')
-        self.app.db_manager.get_connect()
         self.app.db_manager.insert('users', user_dict)
         self.assertEqual(self.app.db_manager.insert('users', user_dict),
                          "You try insert not unique user",
@@ -256,7 +252,6 @@ class DBTest(unittest.TestCase):
     #TODO nothing assert
     def test_drop_table(self):
         """ Drop table. """
-        self.app.db_manager.get_connect()
         self.assertTrue(hasattr(self.app.db_manager, 'conn'))
         self.app.db_manager.drop_table_with_data('users')
 
@@ -281,15 +276,13 @@ class DBTest(unittest.TestCase):
             user_password='art',
             user_class=12,
             user_mail='1233@ase')
-        self.app.db_manager.get_connect()
         self.app.db_manager.drop_table_with_data('users')
-        self.app.db_manager.get_connect()
         self.app.db_manager.insert(table_name, first_data)
         self.app.db_manager.insert(table_name, second_data)
         res = self.app.db_manager.get_all_entries('users')
         list_res = list(res)
-        self.assertEqual(dict(list_res[0]), first_data)
-        self.assertEqual(dict(list_res[1]), second_data)
+        self.assertEqual(dict(list_res[1]), first_data)
+        self.assertEqual(dict(list_res[0]), second_data)
         self.assertEqual(len(list_res), 2)
 
     def test_get_logins(self):
@@ -313,9 +306,7 @@ class DBTest(unittest.TestCase):
             user_password='art',
             user_class=12,
             user_mail='1233@ase')
-        self.app.db_manager.get_connect()
         self.app.db_manager.drop_table_with_data('users')
-        self.app.db_manager.get_connect()
         self.app.db_manager.insert(table_name, first_data)
         self.app.db_manager.insert(table_name, second_data)
         res = self.app.db_manager.get_logins_all_users()
@@ -336,19 +327,58 @@ class DBTest(unittest.TestCase):
             user_password='art',
             user_class=12,
             user_mail='1233@ase')
-        self.app.db_manager.get_connect()
         self.app.db_manager.drop_table_with_data('users')
-        self.app.db_manager.get_connect()
         self.app.db_manager.insert(table_name, user_data)
         res = self.app.db_manager.get_password(user_data['user_login'])
         self.assertTrue(user_data['user_password'] in res, res)
 
-    def test_det_all_tasks(self):
+    def test_get_all_tasks(self):
         """
 
         :return:
         """
-        self.assertTrue(False)
+        self.app.db_manager.drop_table_with_data('tasks')
+        data_dict = {'user_login': '1341341234', 'user_task': 'qwefqwefqwef'}
+        self.assertEqual(self.app.db_manager.add_task(data_dict), 'Insert ok')
+        res = self.app.db_manager.get_all_tasks()
+        self.assertTrue(len(res) == 1, len(res))
+        self.assertTrue(res[0]['user_login'] == '1341341234')
+
+    def test_update_table(self):
+        """
+
+        :return:
+        """
+        self.app.db_manager.drop_table_with_data('tasks')
+        data_dict = {'user_login': '1341341234', 'user_task': 'qwefqwefqwef'}
+        self.assertEqual(self.app.db_manager.add_task(data_dict), 'Insert ok')
+        res = self.app.db_manager.get_all_tasks()
+        self.assertTrue(res[0]['user_login'] == '1341341234')
+        self.assertTrue(len(res) == 1, len(res))
+        self.assertEqual(self.app.db_manager.update_table('tasks', 'user_login', 'qwe', 1), 'Update ok')
+        res = self.app.db_manager.get_all_tasks()
+        self.assertTrue(res[0]['user_login'] == 'qwe')
+        self.assertTrue(len(res) == 1, len(res))
+
+
+    def test_delete_entry(self):
+        """
+
+        :return:
+        """
+        self.app.db_manager.drop_table_with_data('tasks')
+        data_dict = {'user_login': '1341341234', 'user_task': 'qwefqwefqwef'}
+        self.assertEqual(self.app.db_manager.add_task(data_dict), 'Insert ok')
+        res = self.app.db_manager.get_all_tasks()
+        self.assertTrue(res[0]['user_login'] == '1341341234')
+        self.assertTrue(len(res) == 1, len(res))
+        self.assertEqual(self.app.db_manager.delete_entry('tasks', 1), 'Delete ok')
+        res = self.app.db_manager.get_all_tasks()
+        self.assertTrue(len(res) == 0, len(res))
+
+
+
+
 
 
 if __name__ == '__main__':

@@ -3,25 +3,72 @@
 
     <h1>Task</h1>
     {% if session.admin %}
+        <fieldset>
+        <legend><h2>Add</h2></legend>
         <form action="{{ url_for('add_task') }}" method=post class=add-entry>
             <dl>
                 <dt>User:
-                <dd><textarea class=task name=user_login></textarea>
+                <!--<dd><textarea class=task name=user_login></textarea>-->
+                <dd>
+                    <select name=user_login>
+                        {% for user in users %}
+                            <option value={{user}}>{{user}}</option>
+                        {% endfor %}
+                    </select>
+                </dt>
                 <dt>Task:
                 <dd><textarea class=task name=user_task></textarea>
                 <dd><input type=submit value=Add>
             </dl>
         </form>
-        <form action="{{ url_for('add_task') }}" method=post width=45%>
-            <dd><input type=submit value=Drop>
+        </fieldset>
+        <p></p>
+        <fieldset>
+        <legend><h2>Delete</h2></legend>
+        <form action="{{ url_for('delete_task') }}" method=post>
+            <dt>ID:
+            <dd><input name="id">
+            <dd><input type=submit value=Delete>
         </form>
+        </fieldset>
+        <p></p>
+        <fieldset>
+        <legend><h2>Update</h2></legend>
+        <form action="{{ url_for('update_task') }}" method=post>
+            <dt>ID:
+            <dd><input name="id">
+            <dt>Column name:
+                    <select name="column_name">
+                        {% for column_name in ['user_login','user_task', 'user_value'] %}
+                            <option value={{column_name}}>{{column_name}}</option>
+                        {% endfor %}
+                    </select>
+            <dt>Data:
+                <dd><textarea class=task name=data></textarea>
+            <dd><input type=submit value=Update>
+        </form>
+        </fieldset>
+        <p></p>
     {% endif %}
-    <div class=title> </div>
-    <table class=sub_title>
-        <tr>
-            {% for name in ['id', 'time', 'task', 'value'] %}
-                <th> {{name}} </th>
+    <div class=title id="123">
+        <table class=sub_title>
+            <tr>
+                {% for name in ['id', 'time', 'user_login','user_task', 'user_value'] %}
+                    <th> {{name}} </th>
+                {% endfor %}
+            </tr>
+            {% for task in tasks %}
+                <tr id="{{ color_schema[task['user_value']] }}">
+                    {% for name in ['id', 'time', 'user_login','user_task', 'user_value'] %}
+                    <!--#TODO make normal-->
+                        {% if name == 'user_task'%}
+                            <th><textarea>{{task[name]}}</textarea>  </th>
+                        {% else %}
+                            <th>{{task[name]}}</th>
+                        {% endif%}
+                    {% endfor %}
+                </tr>
             {% endfor %}
-        </tr>
-    </table>
+        </table>
+    </div>
 {% endblock %}

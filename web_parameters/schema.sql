@@ -14,5 +14,5 @@ create table if not exists tasks (
     time text not NULL,
     user_login text not NULL,
     user_task text not NULL,
-    user_value int
+    user_value text
     );

@@ -61,14 +61,14 @@ class DatabaseManager(object):
     def get_all_entries(self, table_name):
         self.get_connect()
         res = self.conn.execute(
-            "select * from '{}'".format(
+            "select * from '{}' order by id desc".format(
                 table_name.replace('\'', '').replace('\"', ''))).fetchall()
         self.close_connect()
         return res
 
     def get_entry(self, table_name, user_login):
         self.get_connect()
-        query = "select * from '{}' where user_login='{}'".format(
+        query = "select * from '{}' where user_login='{}' order by id desc".format(
             table_name.replace('\'', '').replace('\"', ''),
             user_login.replace('\'', '').replace('\"', ''))
         print(query)
@@ -144,11 +144,69 @@ class DatabaseManager(object):
         data_dict['time'] = time.ctime(time.time())
         return self.insert('tasks', data_dict)
 
-    def get_all_task(self):
+    def get_all_tasks(self):
         """
-        :return:
+        :return: List of sql_dictionary
         """
         res = self.get_all_entries('tasks')
+        return res
+
+    def get_tasks_by_user(self, user):
+        """
+        :return: List of sql_dictionary
+        """
+        res = self.get_entry('tasks', user)
+        return res
+
+
+    #TODO test
+    def update_table(self, table_name, column_name, data, id):
+        """
+
+        :param table:
+        :param column:
+        :param data:
+        :return:
+        """
+        query = "update '{}' set '{}'='{}' where id='{}'"
+        # for key in data_dict:
+        #     column_name.append(str(key).replace('\'', '').replace('\"', ''))
+        #     data.append(str(data_dict[key]).replace('\'', '').replace('\"', ''))
+
+        query = query.format(
+            table_name,
+            column_name,
+            data,
+            id)
+
+        try:
+            self.get_connect()
+            self.conn.execute(query)
+            self.close_connect()
+        except sqlite3.IntegrityError as answer:
+            pass
+        else:
+            return 'Update ok'
+
+    #TODO test
+    def delete_entry(self, table_name, id):
+        """
+
+        :param table:
+        :param column:
+        :param data:
+        :return:
+        """
+        query = "delete from '{}' where id='{}'"
+        query = query.format(table_name, id)
+        try:
+            self.get_connect()
+            self.conn.execute(query)
+            self.close_connect()
+        except sqlite3.IntegrityError as answer:
+            pass
+        else:
+            return 'Delete ok'
 
     def parser_args(self):
         pass
