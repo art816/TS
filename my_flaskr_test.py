@@ -142,6 +142,22 @@ class FlaskrTestCase(unittest.TestCase):
         """ """
         rv = self.app_test_client.get('/show_all_users')
         self.assertTrue('200' in str(rv))
+
+    def test_jquery_yellow_color(self):
+        user_dict = dict(
+            user_login='1',
+            user_name='art212321',
+            user_s_name='',
+            user_password='art',
+            user_class=12,
+            user_mail='1233@ase')
+        rv = self.registered(user_dict)
+        self.assertTrue('NOT NULL constraint failed' in str(rv.data), str(rv.data))
+        print('rv=', rv.data)
+        assert(False)
+
+        #test add user in user_list
+
         
 
 

@@ -122,3 +122,7 @@ select {
     font-style: oblique;
     font-size: 16;
 }
+
+.fail {
+    background-color: yellow;
+}

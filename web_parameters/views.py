@@ -62,6 +62,10 @@ def registered_user():
         print('answer=', answer)
         if answer == 'Insert ok':
             flash('You were registered')
+            session['user_name'] = request.form['user_login']
+            session['logged_in'] = True
+            session['admin'] = None
+            flash('You were logged in')
             return redirect(url_for('user_data',
                                     user_login=user_dict['user_login']))
         else:

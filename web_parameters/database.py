@@ -119,13 +119,16 @@ class DatabaseManager(object):
             self.close_connect()
         except sqlite3.IntegrityError as answer:
             for res in answer.args:
+                print(res)
                 if 'UNIQUE constraint failed' in res:
-                    return "You try insert not unique user"
+                    ind = res[::-1].find('.')
+                    #TODO make for double unique
+                    return "You try insert not unique user: {}".format(
+                        res[len(res)-ind:])
                 if 'NOT NULL constraint failed' in res:
                     ind = res.find('.')
-                    sql_error = 'NOT NULL constraint failed: {}'.format(
+                    return 'NOT NULL constraint failed: {}'.format(
                         res[ind+1:])
-                    return sql_error
         else:
             return 'Insert ok'
 
