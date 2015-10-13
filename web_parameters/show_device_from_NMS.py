@@ -20,7 +20,6 @@ def configure_app(db_name=None):
     app.db_manager = database.DatabaseManager(app)
     # app.secret_key = os.urandom(32)
     print('secret_key=', app.secret_key)
-
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         app.db_manager.close_connect()

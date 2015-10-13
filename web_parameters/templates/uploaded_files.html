@@ -1,0 +1,9 @@
+{% extends "new_base.html" %}
+{% block section %}
+    {% for file in files %}
+        {% for f in file %}
+            <div> <a href={{'/uploaded_file/'+f}}> {{f}}</a>
+            </div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

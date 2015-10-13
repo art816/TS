@@ -1,7 +1,9 @@
+import os
 from flask import render_template, request, session, flash, redirect, \
-    url_for, abort, g
+    url_for, abort, g, send_from_directory
 from flask import jsonify
 from flask import current_app as app
+from werkzeug.utils import secure_filename
 
 
 # TODO сделать разлогинивание при перезапуске сервиса
@@ -293,6 +295,52 @@ def show_all_users():
     res = app.db_manager.get_all_entries('users')
     return render_template('all_user_data.html', user_data=res)
 
+def content():
+    """
+
+    :return:
+    """
+    return render_template("content.html")
+
+
+def allowed_file(filename):
+    print('3')
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
+
+
+def upload_file():
+    print('1')
+    if request.method == 'POST':
+        print('2')
+        try:
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                print(allowed_file(file.filename))
+                print(allowed_file(file.filename))
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                return redirect(url_for('uploaded_file',
+                                    filename=filename))
+        except Exception as e:
+            print(e)
+    print('123123123')
+    return render_template('upload_file.html', )
+
+
+def uploaded_file_list():
+    """
+
+    :return:
+    """
+    all_files = [files for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER'])]
+    return render_template('uploaded_files.html', files=all_files)
+
+
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+
 
 def route(configure_app):
     """ Route. """
@@ -323,6 +371,14 @@ def route(configure_app):
                                update_task, methods=['POST'])
     configure_app.add_url_rule('/delete_task', 'delete_task',
                                delete_task, methods=['POST'])
+    configure_app.add_url_rule('/content', 'content',
+                               content, methods=['GET'])
+    configure_app.add_url_rule('/upload_file', 'upload_file',
+                               upload_file, methods=['GET', 'POST'])
+    configure_app.add_url_rule('/uploaded_file/<filename>', 'uploaded_file',
+                               uploaded_file, methods=['GET'])
+    configure_app.add_url_rule('/uploaded_files', 'uploaded_files',
+                               uploaded_file_list, methods=['GET', 'POST'])
     # Json
     configure_app.add_url_rule('/get_num_entries', 'get_num_entries',
                                get_num_entries)

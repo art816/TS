@@ -12,3 +12,6 @@ COLOR_SCHEMA = {0:'white',
                 3:'yellow',
                 4:'blue',
                 5:'green'}
+UPLOAD_FOLDER = 'D:/Python_project/TS/load_files/'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024
