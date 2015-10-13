@@ -65,7 +65,7 @@ class FlaskrTestCase(unittest.TestCase):
         """ """
         rv = self.login('admin', '111111')
         self.assertTrue('You were logged in' in str(rv.data))
-        self.assertTrue('Admin=admin' in str(rv.data))
+        self.assertTrue('Admin=admin' in str(rv.data), str(rv.data))
         rv = self.logout()
         self.assertTrue('You were logged out' in str(rv.data))
         rv = self.login('adminx', 'default')

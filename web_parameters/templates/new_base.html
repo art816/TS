@@ -9,9 +9,9 @@
             <h1>City Gallery</h1>
             {% if session.logged_in %}
                 {% if session.admin %}
-                    <div class="user"> Admin={{session.user_name}}</div>
+                    <div class="user"> Admin={{session.user_login}}</div>
                 {% else %}
-                    <div class="user"> User={{session.user_name}}</div>
+                    <div class="user"> User={{session.user_login}}</div>
                 {% endif %}
             {% endif %}
         </header>
@@ -20,10 +20,10 @@
         <div> <a href="/start">Home page</a> </div>
         <div> <a href="/login">Login</a> </div>
         {% if session.logged_in %}
-            <div> <a href={{'/task/'+session.user_name}}>Task</a> </div>
+            <div> <a href={{'/task/'+session.user_login}}>Task</a> </div>
             <div> <a href='/logout'> Logout </a> </div>
             {% if not session.admin %}
-                <div> <a href={{'/user_data/'+session.user_name}}> User_data </a> </div>
+                <div> <a href={{'/user_data/'+session.user_login}}> User_data </a> </div>
             {% endif %}
         {% endif %}
         {% if session.admin %}
@@ -32,6 +32,7 @@
         <div> <a href='/registered_user'> Registered </a> </div>
         <div> <a href='/content'> Content </a> </div>
         <div> <a href='/upload_file'> Upload file </a> </div>
+        <div> <a href='/uploaded_files'> Uploaded files </a> </div>
 
         Tokyo<br>
         </nav>

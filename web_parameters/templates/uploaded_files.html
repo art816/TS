@@ -1,9 +1,12 @@
 {% extends "new_base.html" %}
 {% block section %}
-    {% for file in files %}
-        {% for f in file %}
-            <div> <a href={{'/uploaded_file/'+f}}> {{f}}</a>
+    {% for dir in dirs_files %}
+        <div> <p> {{dir}}</p>
+        {% for file in dirs_files[dir] %}
+            <div> <a href={{'/uploaded_files/'+dir+file}}> {{file}}</a>
+                  <p></p>
             </div>
         {% endfor %}
+        </div>
     {% endfor %}
 {% endblock %}

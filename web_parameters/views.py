@@ -29,7 +29,7 @@ def login():
         elif request.form['password'] != app.config['PASSWORD']:
             error = 'Invalid password'
         else:
-            session['user_name'] = request.form['user_login']
+            session['user_login'] = request.form['user_login']
             session['logged_in'] = True
             session['admin'] = True
             flash('You were logged in')
@@ -44,7 +44,7 @@ def login():
                     request.form['user_login']):
                 error = 'Invalid password'
             else:
-                session['user_name'] = request.form['user_login']
+                session['user_login'] = request.form['user_login']
                 session['logged_in'] = True
                 session.pop('admin', None)
                 flash('You were logged in')
@@ -64,7 +64,7 @@ def registered_user():
         print('answer=', answer)
         if answer == 'Insert ok':
             flash('You were registered')
-            session['user_name'] = request.form['user_login']
+            session['user_login'] = request.form['user_login']
             session['logged_in'] = True
             session['admin'] = None
             flash('You were logged in')
@@ -98,7 +98,7 @@ def user_data(user_login):
     if not session.get('logged_in'):
         abort(401)
     if not session.get('admin'):
-        if session.get('user_name') != user_login:
+        if session.get('user_login') != user_login:
             abort(401)
     print('user_login=', user_login)
     res = app.db_manager.get_entry('users', user_login)
@@ -111,8 +111,8 @@ def logout(*args):
     print("logout()")
     session.pop('logged_in', None)
     session.pop('admin', None)
-    session.pop('user_name', None)
-    # session.pop('user_name', None)
+    session.pop('user_login', None)
+    # session.pop('user_login', None)
     flash('You were logged out')
     return redirect(url_for('start'))
 
@@ -138,7 +138,7 @@ def add_entry():
     connect = app.db_manager.get_connect(app.config['DATABASE'])
     connect.execute(
         'insert into entries (title, text) values (?, ?)',
-        ['{} says'.format(session['user_name']),
+        ['{} says'.format(session['user_login']),
          '{}: {}'.format(request.form['title'], request.form['text'])])
     connect.commit()
     connect.close()
@@ -210,7 +210,7 @@ def task(user):
     if not session.get('logged_in'):
         abort(401)
     elif not session.get('admin'):
-        if session.get('user_name') != user:
+        if session.get('user_login') != user:
             abort(401)
     else:
         users = app.db_manager.get_logins_all_users()
@@ -271,8 +271,10 @@ def update_task():
     if session.get('admin'):
         if request.method == 'POST':
             user_dict = reformat_request_dict(request.form)
-            answer = app.db_manager.update_table('tasks', user_dict['column_name'],
-                user_dict['data'], user_dict['id'])
+            answer = app.db_manager.update_table('tasks',
+                                                 user_dict['column_name'],
+                                                 user_dict['data'],
+                                                 user_dict['id'])
             print('answer=', answer)
             if answer == 'Update ok':
                 flash(answer)
@@ -304,27 +306,25 @@ def content():
 
 
 def allowed_file(filename):
-    print('3')
     return '.' in filename and \
         filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
 
 
 def upload_file():
-    print('1')
     if request.method == 'POST':
-        print('2')
         try:
             file = request.files['file']
             if file and allowed_file(file.filename):
-                print(allowed_file(file.filename))
-                print(allowed_file(file.filename))
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                user_load_path = os.path.join(app.config['UPLOAD_FOLDER'],
+                                                   session.get('user_login'))
+                if not os.path.exists(user_load_path):
+                    os.mkdir(user_load_path)
+                file.save(os.path.join(user_load_path, filename))
                 return redirect(url_for('uploaded_file',
                                     filename=filename))
         except Exception as e:
             print(e)
-    print('123123123')
     return render_template('upload_file.html', )
 
 
@@ -333,13 +333,16 @@ def uploaded_file_list():
 
     :return:
     """
-    all_files = [files for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER'])]
-    return render_template('uploaded_files.html', files=all_files)
+    dirs_files = dict()
+    for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER']):
+        dirs_files[root] = files
+    return render_template('uploaded_files.html', dirs_files=dirs_files)
 
 
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
+    user_load_path = os.path.join(app.config['UPLOAD_FOLDER'],
+                                  session.get('user_login'))
+    return send_from_directory(user_load_path, filename)
 
 
 def route(configure_app):
@@ -375,7 +378,7 @@ def route(configure_app):
                                content, methods=['GET'])
     configure_app.add_url_rule('/upload_file', 'upload_file',
                                upload_file, methods=['GET', 'POST'])
-    configure_app.add_url_rule('/uploaded_file/<filename>', 'uploaded_file',
+    configure_app.add_url_rule('/uploaded_files/<filename>', 'uploaded_file',
                                uploaded_file, methods=['GET'])
     configure_app.add_url_rule('/uploaded_files', 'uploaded_files',
                                uploaded_file_list, methods=['GET', 'POST'])
