@@ -1,9 +1,18 @@
 {% extends "new_base.html" %}
+{% block script %}
+    <link rel="stylesheet" type="text/css" href="/static/style1.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script src="/static/js/dragdrop.js"></script>
+{% endblock%}
+
 {% block section %}
     <title>Upload new File</title>
     <h1>Upload new File</h1>
     <form action="" method=post enctype=multipart/form-data>
+        <div id="dropZone">
+           Для загрузки, перетащите файл сюда.
         <input type=file name=file>
+        </div>
         <input type=submit value=Upload>
     </form>
 {% endblock %}

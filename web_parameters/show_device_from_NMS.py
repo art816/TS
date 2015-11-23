@@ -32,7 +32,7 @@ def run_server():
     print("rrrrrrrrrrrrrruuuuuuuunnnnnnnnn")
     app = configure_app()
     # app.do_teardown_appcontext = views.logout
-    app.run(debug=True, )
+    app.run(debug=True, port=5001)
 
 
 def main():

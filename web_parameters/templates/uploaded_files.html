@@ -3,7 +3,7 @@
     {% for dir in dirs_files %}
         <div> <p> {{dir}}</p>
         {% for file in dirs_files[dir] %}
-            <div> <a href={{'/uploaded_files/'+dir+file}}> {{file}}</a>
+            <div> <a href="/uploaded_file?path='{{dir}}'&name='{{file}}'"> {{file}}</a>
                   <p></p>
             </div>
         {% endfor %}

@@ -311,9 +311,9 @@ def allowed_file(filename):
 
 
 def upload_file():
+
     if request.method == 'POST':
         try:
-            file = request.files['file']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 user_load_path = os.path.join(app.config['UPLOAD_FOLDER'],
@@ -322,10 +322,25 @@ def upload_file():
                     os.mkdir(user_load_path)
                 file.save(os.path.join(user_load_path, filename))
                 return redirect(url_for('uploaded_file',
-                                    filename=filename))
+                                    name=filename, path='/'+session.get('user_login')))
+            else:
+                print("ERROR")
         except Exception as e:
-            print(e)
-    return render_template('upload_file.html', )
+            file = request.get_data()
+            filename = secure_filename('1111111111111')
+            user_load_path = os.path.join(app.config['UPLOAD_FOLDER'],
+                                                   session.get('user_login'))
+
+            if not os.path.exists(user_load_path):
+                os.mkdir(user_load_path)
+            f = open(os.path.join(user_load_path, filename), 'wb')
+            f.write(file)
+            f.close()
+            return redirect(url_for('uploaded_file',
+                                    name=filename, path='/'+session.get('user_login')))
+
+
+    return render_template('upload_file.html')
 
 
 def uploaded_file_list():
@@ -335,14 +350,14 @@ def uploaded_file_list():
     """
     dirs_files = dict()
     for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER']):
-        dirs_files[root] = files
+        dirs_files[root.replace(app.config['UPLOAD_FOLDER'],'')] = files
     return render_template('uploaded_files.html', dirs_files=dirs_files)
 
 
-def uploaded_file(filename):
-    user_load_path = os.path.join(app.config['UPLOAD_FOLDER'],
-                                  session.get('user_login'))
-    return send_from_directory(user_load_path, filename)
+def uploaded_file():
+    user_load_path = app.config['UPLOAD_FOLDER'] + request.values['path'].replace('\'','')
+    name = request.values['name'].replace('\'','')
+    return send_from_directory(user_load_path, name)
 
 
 def route(configure_app):
@@ -378,7 +393,7 @@ def route(configure_app):
                                content, methods=['GET'])
     configure_app.add_url_rule('/upload_file', 'upload_file',
                                upload_file, methods=['GET', 'POST'])
-    configure_app.add_url_rule('/uploaded_files/<filename>', 'uploaded_file',
+    configure_app.add_url_rule('/uploaded_file', 'uploaded_file',
                                uploaded_file, methods=['GET'])
     configure_app.add_url_rule('/uploaded_files', 'uploaded_files',
                                uploaded_file_list, methods=['GET', 'POST'])
